@@ -5,6 +5,7 @@ import type { Plugin } from "@opencode-ai/plugin";
 import { stateMachine } from "./state-machine";
 import { preFlight } from "./pre-flight";
 import { qualityGates } from "./quality-gates";
+import { sessionHooks } from "./session-hooks";
 
 export const OrchestratorKit: Plugin = async ({ 
   project, 
@@ -16,31 +17,23 @@ export const OrchestratorKit: Plugin = async ({
   // Инициализация state machine при запуске плагина
   await stateMachine.initialize(directory);
 
-  // Обработчик событий
+  // Обработчик событий (делегируем в session-hooks.ts)
   const eventHandler = async (input: any, output: any) => {
     if (input.event?.type === "session.created") {
-      // При старте сессии выполняем Pre-Flight проверки
-      const preFlightResult = await preFlight.run($, directory);
-      
-      if (!preFlightResult.success) {
-        await client.session.prompt({
-          body: `❌ Pre-Flight проверки не пройдены:\n${preFlightResult.errors.join("\n")}\n\nПроверьте готовность проекта перед началом работы.`
-        });
-        return;
-      }
-      
-      // Определение состояния проекта
-      const projectState = await stateMachine.getState($, directory);
-      await client.session.prompt({
-        body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})\n\nСостояние проекта: ${projectState.code} (${projectState.description})\n\nРазрешённые агенты: ${projectState.allowedAgents.join(", ")}`
-      });
+      await sessionHooks.onSessionCreated($, directory, client);
     }
     
     if (input.event?.type === "session.idle") {
-      // При завершении сессии сохраняем контекст
-      await client.session.prompt({
-        body: `💾 Контекст сессии сохранён.\n\nТекущее состояние: ${stateMachine.getCurrentState()}`
-      });
+      await sessionHooks.onSessionIdle(directory, client);
+    }
+    
+    if (input.event?.type === "session.compacted") {
+      await sessionHooks.onSessionCompacted(directory, client);
+    }
+    
+    if (input.event?.type === "session.error") {
+      const error = input.error instanceof Error ? input.error : new Error(String(input.error));
+      await sessionHooks.onSessionError(directory, error, input.context);
     }
   };
 

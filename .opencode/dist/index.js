@@ -4,33 +4,25 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrchestratorKit = void 0;
 const state_machine_1 = require("./state-machine");
-const pre_flight_1 = require("./pre-flight");
 const quality_gates_1 = require("./quality-gates");
+const session_hooks_1 = require("./session-hooks");
 const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
     // Инициализация state machine при запуске плагина
     await state_machine_1.stateMachine.initialize(directory);
-    // Обработчик событий
+    // Обработчик событий (делегируем в session-hooks.ts)
     const eventHandler = async (input, output) => {
         if (input.event?.type === "session.created") {
-            // При старте сессии выполняем Pre-Flight проверки
-            const preFlightResult = await pre_flight_1.preFlight.run($, directory);
-            if (!preFlightResult.success) {
-                await client.session.prompt({
-                    body: `❌ Pre-Flight проверки не пройдены:\n${preFlightResult.errors.join("\n")}\n\nПроверьте готовность проекта перед началом работы.`
-                });
-                return;
-            }
-            // Определение состояния проекта
-            const projectState = await state_machine_1.stateMachine.getState($, directory);
-            await client.session.prompt({
-                body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})\n\nСостояние проекта: ${projectState.code} (${projectState.description})\n\nРазрешённые агенты: ${projectState.allowedAgents.join(", ")}`
-            });
+            await session_hooks_1.sessionHooks.onSessionCreated($, directory, client);
         }
         if (input.event?.type === "session.idle") {
-            // При завершении сессии сохраняем контекст
-            await client.session.prompt({
-                body: `💾 Контекст сессии сохранён.\n\nТекущее состояние: ${state_machine_1.stateMachine.getCurrentState()}`
-            });
+            await session_hooks_1.sessionHooks.onSessionIdle(directory, client);
+        }
+        if (input.event?.type === "session.compacted") {
+            await session_hooks_1.sessionHooks.onSessionCompacted(directory, client);
+        }
+        if (input.event?.type === "session.error") {
+            const error = input.error instanceof Error ? input.error : new Error(String(input.error));
+            await session_hooks_1.sessionHooks.onSessionError(directory, error, input.context);
         }
     };
     // Pre-tool hook — выполняется перед каждым инструментом
