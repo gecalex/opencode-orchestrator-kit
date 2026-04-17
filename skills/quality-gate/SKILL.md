@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: Quality Gate проверки качества. 5 ворот: Pre-Execution, Post-Execution, Pre-Commit, Pre-Merge, Pre-Implementation.
+description: "Quality Gate проверки качества. 5 ворот: Pre-Execution, Post-Execution, Pre-Commit, Pre-Merge, Pre-Implementation."
 compatibility: opencode
 ---
 

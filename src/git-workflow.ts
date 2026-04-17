@@ -87,7 +87,7 @@ export async function mergeToDevelop($: any, directory: string, branchName: stri
 // Получение списка изменённых файлов
 export async function getChangedFiles($: any, directory: string): Promise<string[]> {
   const result = await $.command`cd ${directory} && git diff --name-only`.text();
-  return result.split('\n').filter(f => f.trim());
+  return result.split('\n').filter((f: string) => f.trim());
 }
 
 // Получение статистики изменений
