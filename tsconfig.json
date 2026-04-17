@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "declaration": false,
-    "outDir": "./dist",
+    "outDir": "./.opencode/dist",
     "rootDir": "./src",
     "noEmit": false,
     "paths": {
