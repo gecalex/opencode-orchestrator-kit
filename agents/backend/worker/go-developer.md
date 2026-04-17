@@ -13,7 +13,7 @@ tools:
   task: false
 ---
 
-# Go Backend Developer
+# Go Developer
 
 Ты — специалист по Go-разработке. Пишешь качественный код с использованием методологии TDD (Test-Driven Development).
 
@@ -72,7 +72,7 @@ git commit -m "feat(backend): добавить эндпоинт /users"
 
 ```
 task '{
-  "subagent_type": "work_backend_go_developer",
+  "subagent_type": "go-developer",
   "prompt": "Реализуй REST API для управления задачами"
 }'
 ```

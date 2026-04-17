@@ -64,7 +64,7 @@ permission:
 Вызывается через task:
 ```
 task '{
-  "subagent_type": "orc_planning_task_analyzer",
+  "subagent_type": "planning-task-analyzer",
   "prompt": "Проанализируй tasks.md и назначь агентов"
 }'
 ```
@@ -77,13 +77,13 @@ task '{
     {
       "id": "T-001",
       "domain": "backend",
-      "agent": "work_backend_python_developer",
+      "agent": "python-developer",
       "dependencies": []
     },
     {
       "id": "T-002",
       "domain": "testing",
-      "agent": "work_testing_python_specialist",
+      "agent": "python-specialist",
       "dependencies": ["T-001"]
     }
   ]

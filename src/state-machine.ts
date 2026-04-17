@@ -8,29 +8,29 @@ const STATES: Record<ProjectStateCode, ProjectState> = {
   10: {
     code: 10,
     description: "empty",
-    allowedAgents: ["work_dev_project_initializer"],
-    blockedAgents: ["speckit-*", "work_*"],
+    allowedAgents: ["project-initializer"],
+    blockedAgents: ["*"],
     allowedTools: ["run_shell_command", "read_file", "glob", "grep_search"]
   },
   20: {
     code: 20,
     description: "existing_code_no_specs",
-    allowedAgents: ["speckit-constitution-agent", "speckit-specify-agent", "work_health_bug_hunter"],
-    blockedAgents: ["speckit-plan-agent", "work_*"],
+    allowedAgents: ["constitution-agent", "specify-agent"],
+    blockedAgents: ["plan-agent", "tasks-agent"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search"]
   },
   30: {
     code: 30,
     description: "partial_specification",
-    allowedAgents: ["speckit-specify-agent", "specification-analyst"],
-    blockedAgents: ["speckit-plan-agent", "work_*"],
+    allowedAgents: ["specify-agent", "specification-analyst"],
+    blockedAgents: ["plan-agent", "tasks-agent"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search"]
   },
   40: {
     code: 40,
     description: "full_specification",
-    allowedAgents: ["speckit-plan-agent", "speckit-tasks-agent", "work_*", "orc_planning_task_analyzer"],
-    blockedAgents: ["speckit-constitution-agent", "speckit-specify-agent"],
+    allowedAgents: ["plan-agent", "tasks-agent", "planning-task-analyzer"],
+    blockedAgents: ["constitution-agent", "specify-agent"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "edit", "glob", "grep_search", "task"]
   }
 };
