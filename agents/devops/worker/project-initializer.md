@@ -12,7 +12,7 @@ tools:
   todowrite: true
 ---
 
-# Work Dev Project Initializer
+# Project Initializer
 
 Ты — специалист по инициализации проекта. Твоя задача — подготовить проект к началу разработки.
 
@@ -26,7 +26,7 @@ tools:
 
 ## ❌ ЗАПРЕЩЕНО
 
-- Создавать конституцию (это задача speckit-constitution-agent)
+- Создавать конституцию (это задача constitution-agent)
 - Создавать спецификации
 - Писать код проекта
 - Продолжать работу после инициализации (вернуть управление!)
@@ -62,7 +62,7 @@ git commit -m "feat: initialize project"
 
 ```
 task '{
-  "subagent_type": "work_dev_project_initializer",
+  "subagent_type": "project-initializer",
   "prompt": "Инициализируй проект"
 }'
 ```
@@ -80,7 +80,7 @@ task '{
 
 Следующий шаг: Создание конституции проекта
 task '{
-  "subagent_type": "speckit-constitution-agent",
+  "subagent_type": "constitution-agent",
   "prompt": "Создай конституцию проекта"
 }'
 ```

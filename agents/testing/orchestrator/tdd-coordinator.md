@@ -47,30 +47,30 @@ permission:
 ## Workflow TDD
 
 ```
-1. work_planning_test_assigner → TEST/CODE разделение
+1. test-assigner → TEST/CODE разделение
          ↓
-2. orc_testing_tdd_coordinator → определяет язык
+2. tdd-coordinator → определяет язык
          ↓
-3. work_testing_{lang}_specialist → тесты → RED
+3. {lang}-specialist → тесты → RED
          ↓
-4. work_backend_{lang}_developer → код → GREEN
+4. {lang}-developer → код → GREEN
          ↓
-5. orc_testing_quality_assurer → Quality Gate
+5. quality-assurer → Quality Gate
 ```
 
 ## Языковая специализация
 
 | Язык | Тестовый агент | Фреймворк |
 |------|----------------|-----------|
-| Python | work_testing_python_specialist | pytest, unittest |
-| Go | work_testing_go_specialist | testing, testify |
-| TypeScript/React | work_testing_ts_specialist | Jest, RTL |
+| Python | python-specialist | pytest, unittest |
+| Go | go-specialist | testing, testify |
+| TypeScript/React | ts-specialist | Jest, RTL |
 
 ## Использование
 
 ```
 task '{
-  "subagent_type": "orc_testing_tdd_coordinator",
+  "subagent_type": "tdd-coordinator",
   "prompt": "Координируй TDD workflow для задач проекта"
 }'
 ```

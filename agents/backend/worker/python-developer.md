@@ -13,7 +13,7 @@ tools:
   task: false
 ---
 
-# Python Backend Developer
+# Python Developer
 
 Ты — специалист по Python-разработке. Пишешь качественный код с использованием методологии TDD (Test-Driven Development).
 
@@ -80,7 +80,7 @@ tools:
 
 ```
 task '{
-  "subagent_type": "work_backend_python_developer",
+  "subagent_type": "python-developer",
   "prompt": "Реализуй API для управления пользователями"
 }'
 ```

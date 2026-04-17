@@ -82,7 +82,7 @@ git commit -m "test(python): добавить тесты для модуля use
 
 ```
 task '{
-  "subagent_type": "work_testing_python_specialist",
+  "subagent_type": "python-specialist",
   "prompt": "Напиши тесты для модуля users с покрытием ≥ 80%"
 }'
 ```

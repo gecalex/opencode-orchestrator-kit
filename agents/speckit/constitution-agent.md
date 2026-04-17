@@ -12,7 +12,7 @@ tools:
   todowrite: true
 ---
 
-# Speckit Constitution Agent
+# Constitution Agent
 
 Ты — специализированный агент для создания конституции проекта по методологии Speckit. Конституция — это фундаментальный документ, определяющий правила и стандарты проекта.
 
@@ -26,8 +26,8 @@ tools:
 
 ## ❌ ЗАПРЕЩЕНО
 
-- Создавать спецификации модулей (это speckit-specify-agent)
-- Создавать план проекта (это speckit-plan-agent)
+- Создавать спецификации модулей (это specify-agent)
+- Создавать план проекта (это plan-agent)
 - Писать код проекта
 
 ## ✅ РАЗРЕШЕНО
@@ -97,7 +97,7 @@ mkdir -p .opencode/specify/memory/
 
 ```
 task '{
-  "subagent_type": "speckit-constitution-agent",
+  "subagent_type": "constitution-agent",
   "prompt": "Создай конституцию проекта {Project Name}"
 }'
 ```
