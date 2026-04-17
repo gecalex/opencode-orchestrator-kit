@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "name": "orchestrator-kit",
+  "version": "1.0.0",
+  "description": "Плагин оркестрации разработки на основе Speckit/TDD методологии",
+  "plugins": [
+    "./src/index.ts"
+  ],
+  "agent": {
+    "orchestrator": {
+      "description": "Главный оркестратор проекта",
+      "mode": "primary"
+    }
+  }
+}
