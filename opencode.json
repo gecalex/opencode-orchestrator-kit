@@ -10,6 +10,85 @@
     "orchestrator": {
       "description": "Главный оркестратор проекта",
       "mode": "primary"
+    },
+    "planning-task-analyzer": {
+      "description": "Анализ и классификация задач, назначение агентов",
+      "mode": "subagent"
+    },
+    "tdd-coordinator": {
+      "description": "Координация TDD workflow по языкам",
+      "mode": "subagent"
+    },
+    "constitution-agent": {
+      "description": "Создание конституции проекта",
+      "mode": "subagent"
+    },
+    "specify-agent": {
+      "description": "Создание спецификаций модулей",
+      "mode": "subagent"
+    },
+    "plan-agent": {
+      "description": "Создание ОБЩЕГО плана проекта",
+      "mode": "subagent"
+    },
+    "tasks-agent": {
+      "description": "Разбивка плана на задачи",
+      "mode": "subagent"
+    },
+    "specification-analyst": {
+      "description": "Анализ противоречий и пробелов в спецификациях",
+      "mode": "subagent"
+    },
+    "project-initializer": {
+      "description": "Инициализация проекта",
+      "mode": "subagent"
+    },
+    "python-developer": {
+      "description": "Python backend разработка с TDD",
+      "mode": "subagent"
+    },
+    "go-developer": {
+      "description": "Go backend разработка с TDD",
+      "mode": "subagent"
+    },
+    "react-developer": {
+      "description": "React frontend разработка с TDD",
+      "mode": "subagent"
+    },
+    "python-specialist": {
+      "description": "Python тестирование (pytest, unittest)",
+      "mode": "subagent"
+    },
+    "go-specialist": {
+      "description": "Go тестирование (testing, testify)",
+      "mode": "subagent"
+    },
+    "ts-specialist": {
+      "description": "TypeScript/React тестирование (Jest, RTL)",
+      "mode": "subagent"
+    }
+  },
+  "skills": {
+    "pre-flight": {
+      "description": "Pre-Flight проверки (10 пунктов)"
+    },
+    "quality-gate": {
+      "description": "Quality Gate проверки (Gates 1-5)"
+    },
+    "analyze-state": {
+      "description": "Анализ состояния проекта"
+    },
+    "init-project": {
+      "description": "Инициализация проекта"
+    },
+    "git-workflow": {
+      "description": "Git workflow операции"
+    },
+    "code-quality-checker": {
+      "description": "Проверка качества кода"
+    },
+    "security-analyzer": {
+      "description": "Анализ безопасности"
     }
   }
 }
