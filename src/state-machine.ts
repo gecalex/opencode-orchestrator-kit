@@ -9,8 +9,8 @@ const STATES: Record<ProjectStateCode, ProjectState> = {
     code: 10,
     description: "empty",
     allowedAgents: ["project-initializer"],
-    blockedAgents: ["*"],
-    allowedTools: ["run_shell_command", "read_file", "glob", "grep_search"]
+    blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "work_*"],
+    allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
   },
   20: {
     code: 20,

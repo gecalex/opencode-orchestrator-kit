@@ -1,11 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "name": "orchestrator-kit",
-  "version": "1.0.0",
-  "description": "Плагин оркестрации разработки на основе Speckit/TDD методологии",
-  "plugins": [
-    "./src/index.ts"
-  ],
+  //"plugin": [
+    //"file:///home/alex/MyProjects/opencode_orc_kit/dist/index.js"
+  //],
   "agent": {
     "orchestrator": {
       "description": "Главный оркестратор проекта",
@@ -66,29 +63,6 @@
     "ts-specialist": {
       "description": "TypeScript/React тестирование (Jest, RTL)",
       "mode": "subagent"
-    }
-  },
-  "skills": {
-    "pre-flight": {
-      "description": "Pre-Flight проверки (10 пунктов)"
-    },
-    "quality-gate": {
-      "description": "Quality Gate проверки (Gates 1-5)"
-    },
-    "analyze-state": {
-      "description": "Анализ состояния проекта"
-    },
-    "init-project": {
-      "description": "Инициализация проекта"
-    },
-    "git-workflow": {
-      "description": "Git workflow операции"
-    },
-    "code-quality-checker": {
-      "description": "Проверка качества кода"
-    },
-    "security-analyzer": {
-      "description": "Анализ безопасности"
     }
   }
 }

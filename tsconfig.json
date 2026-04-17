@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "lib": ["ES2022"],
     "strict": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
+    "strictNullChecks": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -13,7 +14,7 @@
     "declaration": false,
     "outDir": "./dist",
     "rootDir": "./src",
-    "noEmit": true,
+    "noEmit": false,
     "paths": {
       "@opencode-ai/plugin": ["./src/types-shim.ts"]
     }

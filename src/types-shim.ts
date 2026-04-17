@@ -1,9 +1,21 @@
 // Shim for @opencode-ai/plugin types
 
+export interface CommandResult {
+  text: () => Promise<string>;
+  exitCode: () => Promise<number>;
+}
+
+export interface CommandExecutor {
+  (strings: TemplateStringsArray, ...args: any[]): CommandResult;
+  (command: string): CommandResult;
+}
+
 export interface PluginInput {
   project: any;
   client: any;
-  $: any;
+  $: {
+    command: CommandExecutor;
+  };
   directory: string;
   worktree: string;
 }

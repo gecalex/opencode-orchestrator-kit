@@ -65,7 +65,8 @@ async function checkDevelopBranch($: any): Promise<boolean> {
 // Проверка 3: .gitignore
 async function checkGitignore(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`test -f ${directory}/.gitignore && echo "yes"`.text();
+    // @ts-ignore
+    const result = await $.command(`test -f ${directory}/.gitignore && echo "yes"`).text();
     return result.trim() === "yes";
   } catch {
     return false;
@@ -75,7 +76,8 @@ async function checkGitignore(directory: string): Promise<boolean> {
 // Проверка 4: Конституция проекта
 async function checkConstitution(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`test -f ${directory}/.opencode/specify/memory/constitution.md && echo "yes"`.text();
+    // @ts-ignore
+    const result = await $.command(`test -f ${directory}/.opencode/specify/memory/constitution.md && echo "yes"`).text();
     return result.trim() === "yes";
   } catch {
     return false;
@@ -85,7 +87,8 @@ async function checkConstitution(directory: string): Promise<boolean> {
 // Проверка 5: Quality Gates скрипты
 async function checkQualityGatesScripts(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`test -d ${directory}/scripts && echo "yes"`.text();
+    // @ts-ignore
+    const result = await $.command(`test -d ${directory}/scripts && echo "yes"`).text();
     return result.trim() === "yes";
   } catch {
     return false;
@@ -95,7 +98,8 @@ async function checkQualityGatesScripts(directory: string): Promise<boolean> {
 // Проверка 6: Агенты
 async function checkAgents(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`ls ${directory}/agents/*.md 2>/dev/null | wc -l`.text();
+    // @ts-ignore
+    const result = await $.command(`ls ${directory}/agents/*.md 2>/dev/null | wc -l`).text();
     return parseInt(result.trim()) > 0;
   } catch {
     return false;
@@ -105,7 +109,8 @@ async function checkAgents(directory: string): Promise<boolean> {
 // Проверка 7: Speckit команды
 async function checkSpeckitCommands(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`ls ${directory}/commands/*.md 2>/dev/null | wc -l`.text();
+    // @ts-ignore
+    const result = await $.command(`ls ${directory}/commands/*.md 2>/dev/null | wc -l`).text();
     return parseInt(result.trim()) > 0;
   } catch {
     return false;
@@ -115,7 +120,8 @@ async function checkSpeckitCommands(directory: string): Promise<boolean> {
 // Проверка 8: Skills
 async function checkSkills(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`ls ${directory}/skills/*/SKILL.md 2>/dev/null | wc -l`.text();
+    // @ts-ignore
+    const result = await $.command(`ls ${directory}/skills/*/SKILL.md 2>/dev/null | wc -l`).text();
     return parseInt(result.trim()) > 0;
   } catch {
     return false;
@@ -125,7 +131,8 @@ async function checkSkills(directory: string): Promise<boolean> {
 // Проверка 9: MCP конфигурация
 async function checkMcpConfig(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`test -f ${directory}/opencode.json && grep -l "mcp" ${directory}/opencode.json 2>/dev/null`.text();
+    // @ts-ignore
+    const result = await $.command(`test -f ${directory}/opencode.json && grep -l "mcp" ${directory}/opencode.json 2>/dev/null`).text();
     return result.trim().length > 0;
   } catch {
     return false;
@@ -135,7 +142,8 @@ async function checkMcpConfig(directory: string): Promise<boolean> {
 // Проверка 10: Скрипты
 async function checkScripts(directory: string): Promise<boolean> {
   try {
-    const result = await $.command`ls ${directory}/scripts/*.sh 2>/dev/null | wc -l`.text();
+    // @ts-ignore
+    const result = await $.command(`ls ${directory}/scripts/*.sh 2>/dev/null | wc -l`).text();
     return parseInt(result.trim()) > 0;
   } catch {
     return false;
