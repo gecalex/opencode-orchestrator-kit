@@ -1,6 +1,39 @@
 "use strict";
-// Машина состояний проекта
+// Машина состояний проекта с табличным FSM
 // Управляет переходами между состояниями и разрешениями агентов/инструментов
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.stateMachine = void 0;
 exports.initialize = initialize;
@@ -11,112 +44,271 @@ exports.isToolAllowed = isToolAllowed;
 exports.isAgentAllowed = isAgentAllowed;
 exports.getStateDescription = getStateDescription;
 exports.updateAfterTask = updateAfterTask;
-// Определение состояний
+exports.getAvailableTransitions = getAvailableTransitions;
+exports.tryTransition = tryTransition;
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const STATE_FILE = ".opencode/state.json";
+const LOG_FILE = ".opencode/state-log.json";
+// Определение состояний (12 фаз workflow)
 const STATES = {
+    0: {
+        code: 0,
+        description: "Инициализация (создан репозиторий, но нет конституции)",
+        allowedAgents: ["project-initializer"],
+        blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "constitution-agent", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
+    },
     10: {
         code: 10,
-        description: "empty",
-        allowedAgents: ["project-initializer"],
-        blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "work_*"],
+        description: "Конституция создана (основные требования и ограничения)",
+        allowedAgents: ["project-initializer", "constitution-agent"],
+        blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
         allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
     },
     20: {
         code: 20,
-        description: "existing_code_no_specs",
-        allowedAgents: ["constitution-agent", "specify-agent"],
-        blockedAgents: ["plan-agent", "tasks-agent"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search"]
+        description: "Спецификации модулей созданы (детальное описание компонентов)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst"],
+        blockedAgents: ["plan-agent", "tasks-agent", "planning-task-analyzer", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
     },
     30: {
         code: 30,
-        description: "partial_specification",
-        allowedAgents: ["specify-agent", "specification-analyst"],
-        blockedAgents: ["plan-agent", "tasks-agent"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search"]
+        description: "План реализации готов (оценка усилий, зависимости, риски)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "planning-task-analyzer"],
+        blockedAgents: ["tasks-agent", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
     },
     40: {
         code: 40,
-        description: "full_specification",
-        allowedAgents: ["plan-agent", "tasks-agent", "planning-task-analyzer"],
-        blockedAgents: ["constitution-agent", "specify-agent"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "edit", "glob", "grep_search", "task"]
+        description: "Задачи разбиты и агенты назначены (готов к выполнению)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator"],
+        blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
+    },
+    50: {
+        code: 50,
+        description: "Тестовая фаза (написание и выполнение тестов)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-specialist", "go-specialist", "ts-specialist"],
+        blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
+    },
+    60: {
+        code: 60,
+        description: "Кодинговая фаза (написание кода под тесты)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer"],
+        blockedAgents: ["work_*", "devops", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
+    },
+    70: {
+        code: 70,
+        description: "Фаза интеграции (объединение компонентов и системное тестирование)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops"],
+        blockedAgents: ["work_*", "security"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
+    },
+    80: {
+        code: 80,
+        description: "Релиз-готов (все качественные gate пройдены, готово к релизу)",
+        allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+        blockedAgents: ["work_*"],
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
+    },
+    90: {
+        code: 90,
+        description: "Релиз выполнен (версия опубликована в main)",
+        allowedAgents: [],
+        blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator"],
+        allowedTools: ["read_file", "glob", "grep_search"]
     }
 };
-// Текущее состояние (хранится в памяти)
+// Определение переходов
+const TRANSITIONS = [
+    {
+        from: 0,
+        to: 10,
+        condition: async () => true, // Всегда при инициализации
+        reason: "Создание конституции"
+    },
+    {
+        from: 10,
+        to: 20,
+        condition: async (_, __) => true, // После создания спецификаций
+        reason: "Спецификации созданы"
+    },
+    {
+        from: 20,
+        to: 30,
+        condition: async (_, __) => true, // После плана
+        reason: "План реализации готов"
+    },
+    {
+        from: 30,
+        to: 40,
+        condition: async (_, __) => true, // После разбивки на задачи
+        reason: "Задачи назначены"
+    },
+    {
+        from: 40,
+        to: 50,
+        condition: async (_, __) => true, // Переход к тестам
+        reason: "Переход к тестовой фазе"
+    },
+    {
+        from: 50,
+        to: 60,
+        condition: async (_, __) => true, // Тесты готовы
+        reason: "Тесты пройдены, переход к кодингу"
+    },
+    {
+        from: 60,
+        to: 70,
+        condition: async (_, __) => true, // Код готов
+        reason: "Код реализован"
+    },
+    {
+        from: 70,
+        to: 80,
+        condition: async (_, __) => true, // Интеграция завершена
+        reason: "Интеграция завершена"
+    },
+    {
+        from: 80,
+        to: 90,
+        condition: async (_, __) => true, // Релиз
+        reason: "Релиз выполнен"
+    }
+];
+// Текущее состояние
 let currentState = 10;
-// Инициализация state machine
-async function initialize(directory) {
-    currentState = 10;
-    return STATES[10];
-}
-// Получение состояния проекта на основе файловой системы
-async function getState($, directory) {
+// История переходов
+const stateLog = [];
+// Логирование перехода
+function logTransition(from, to, reason) {
+    const entry = { from, to, timestamp: new Date().toISOString(), reason };
+    stateLog.push(entry);
+    console.log(`[StateMachine] ${from} -> ${to} ${reason ? `(${reason})` : ""}`);
     try {
-        // Проверка наличия кода
-        const hasCodeResult = await $.command `find ${directory} -type f \\( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.go" -o -name "*.java" \\) 2>/dev/null | head -1`.text();
-        const hasCode = hasCodeResult.trim().length > 0;
-        // Проверка наличия спецификаций
-        const hasSpecsResult = await $.command `find ${directory}/.opencode -type f -name "spec.md" 2>/dev/null | head -1`.text();
-        const hasSpecs = hasSpecsResult.trim().length > 0;
-        // Проверка наличия конституции
-        const hasConstitutionResult = await $.command `test -f ${directory}/.opencode/specify/memory/constitution.md && echo "yes"`.text();
+        fs.writeFileSync(path.join(process.cwd(), LOG_FILE), JSON.stringify(stateLog, null, 2));
+    }
+    catch (e) {
+        console.error("[StateMachine] Failed to write state log:", e);
+    }
+}
+// Сохранение состояния
+function saveState(state, directory) {
+    try {
+        const statePath = path.join(directory, STATE_FILE);
+        const dir = path.dirname(statePath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(statePath, JSON.stringify({ state, updatedAt: new Date().toISOString() }, null, 2));
+    }
+    catch (e) {
+        console.error("[StateMachine] Failed to save state:", e);
+    }
+}
+// Загрузка состояния
+function loadState(directory) {
+    try {
+        const statePath = path.join(directory, STATE_FILE);
+        if (fs.existsSync(statePath)) {
+            const data = JSON.parse(fs.readFileSync(statePath, "utf-8"));
+            return data.state;
+        }
+    }
+    catch (e) {
+        console.error("[StateMachine] Failed to load state:", e);
+    }
+    return null;
+}
+// Определение состояния по ФС
+async function detectStateFromFS($, directory) {
+    try {
+        const hasConstitutionResult = await $.command `test -f ${directory}/PROJECT.md && echo "yes"`.text();
         const hasConstitution = hasConstitutionResult.trim() === "yes";
-        if (!hasCode && !hasSpecs) {
-            currentState = 10;
-        }
-        else if (hasCode && !hasSpecs) {
-            currentState = 20;
-        }
-        else if (hasSpecs && !hasConstitution) {
-            currentState = 30;
-        }
-        else if (hasConstitution) {
-            currentState = 40;
-        }
-        return STATES[currentState];
+        const hasSpecsResult = await $.command `find ${directory}/SPEC -type f -name "*.md" 2>/dev/null | head -1`.text();
+        const hasSpecs = hasSpecsResult.trim().length > 0;
+        const hasTasksResult = await $.command `test -f ${directory}/docs/task.md && echo "yes"`.text();
+        const hasTasks = hasTasksResult.trim() === "yes";
+        const hasImplResult = await $.command `find ${directory}/src -type f 2>/dev/null | head -1`.text();
+        const hasImpl = hasImplResult.trim().length > 0;
+        if (hasImpl && hasTasks && hasSpecs && hasConstitution)
+            return 40;
+        if (hasImpl && hasTasks && hasSpecs)
+            return 30;
+        if (hasTasks && hasSpecs)
+            return 20;
+        if (hasSpecs || hasConstitution)
+            return 10;
+        return 0;
     }
     catch {
-        currentState = 10;
-        return STATES[10];
+        return 0;
     }
 }
-// Получение текущего состояния
+// Инициализация
+async function initialize(directory) {
+    const saved = loadState(directory);
+    currentState = saved !== null ? saved : 10;
+    saveState(currentState, directory);
+    return STATES[currentState];
+}
+// Получение состояния
+async function getState($, directory) {
+    const saved = loadState(directory);
+    if (saved !== null) {
+        currentState = saved;
+        return STATES[currentState];
+    }
+    const detected = await detectStateFromFS($, directory);
+    const fromState = currentState;
+    currentState = detected;
+    if (fromState !== detected) {
+        logTransition(fromState, detected, "detected from filesystem");
+    }
+    saveState(currentState, directory);
+    return STATES[currentState];
+}
+// Получить текущее состояние
 function getCurrentState() {
     return currentState;
 }
-// Установка состояния
-function setState(state) {
+// Установить состояние с логированием
+function setState(state, reason) {
+    const from = currentState;
     currentState = state;
+    if (from !== state) {
+        logTransition(from, state, reason);
+    }
 }
-// Проверка разрешённых инструментов в текущем состоянии
+// Проверить разрешение инструмента
 function isToolAllowed(tool, stateCode) {
     const state = stateCode ?? currentState;
-    return STATES[state].allowedTools.includes(tool);
+    return STATES[state]?.allowedTools.includes(tool) ?? false;
 }
-// Проверка разрешённых агентов с учётом паттернов
+// Проверить разрешение агента
 function isAgentAllowed(agent, stateCode) {
     const state = stateCode ?? currentState;
-    const blocked = STATES[state].blockedAgents;
-    const allowed = STATES[state].allowedAgents;
-    // Проверка запрещённых паттернов
+    const blocked = STATES[state]?.blockedAgents ?? [];
+    const allowed = STATES[state]?.allowedAgents ?? [];
     for (const pattern of blocked) {
         if (pattern.includes("*")) {
             const regex = new RegExp("^" + pattern.replace("*", ".*") + "$");
-            if (regex.test(agent)) {
+            if (regex.test(agent))
                 return false;
-            }
         }
         else if (pattern === agent) {
             return false;
         }
     }
-    // Проверка разрешённых паттернов
     for (const pattern of allowed) {
         if (pattern.includes("*")) {
             const regex = new RegExp("^" + pattern.replace("*", ".*") + "$");
-            if (regex.test(agent)) {
+            if (regex.test(agent))
                 return true;
-            }
         }
         else if (pattern === agent) {
             return true;
@@ -124,16 +316,34 @@ function isAgentAllowed(agent, stateCode) {
     }
     return false;
 }
-// Получение описания состояния по коду
+// Получить описание состояния
 function getStateDescription(stateCode) {
-    return STATES[stateCode].description;
+    return STATES[stateCode]?.description ?? "unknown";
 }
-// Обновление состояния после выполнения задачи
+// Обновить состояние после задачи
 async function updateAfterTask(taskResult, directory, $) {
-    // После успешной задачи обновляем состояние
     if (taskResult?.status === "success") {
         await getState($, directory);
     }
+}
+// Получить доступные переходы
+function getAvailableTransitions() {
+    return TRANSITIONS.filter(t => t.from === currentState);
+}
+// Попытка перехода
+async function tryTransition(directory, $, targetState) {
+    const transition = TRANSITIONS.find(t => t.from === currentState && t.to === targetState);
+    if (!transition) {
+        console.log(`[StateMachine] No transition ${currentState} -> ${targetState}`);
+        return false;
+    }
+    const conditionMet = await transition.condition(directory, $);
+    if (conditionMet) {
+        setState(targetState, transition.reason);
+        saveState(targetState, directory);
+        return true;
+    }
+    return false;
 }
 exports.stateMachine = {
     initialize,
@@ -143,6 +353,8 @@ exports.stateMachine = {
     isToolAllowed,
     isAgentAllowed,
     getStateDescription,
-    updateAfterTask
+    updateAfterTask,
+    getAvailableTransitions,
+    tryTransition
 };
 exports.default = exports.stateMachine;

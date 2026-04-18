@@ -1,7 +1,7 @@
 // Типы для плагина OpenCode Orchestrator Kit
 
-// Коды состояний проекта
-export type ProjectStateCode = 10 | 20 | 30 | 40;
+// Коды состояний проекта (12 фаз workflow)
+export type ProjectStateCode = 0 | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90;
 
 export interface ProjectState {
   code: ProjectStateCode;
