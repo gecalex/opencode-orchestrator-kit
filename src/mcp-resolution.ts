@@ -3,6 +3,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { MCP_REGISTRY, mcpRegistry, type MCPServerDefinition } from "./mcp-registry";
 
 interface MCPConfig {
   name: string;
@@ -20,7 +21,7 @@ interface MCPSearchResult {
   installCommand: string;
 }
 
-// Карта технологий к MCP серверам
+// Карта технологий к MCP серверам — использует реестр
 const TECH_MAPPING: Record<string, MCPSearchResult[]> = {
   python: [
     { name: "python-langserver", type: "language-server", description: "Python LSP", installCommand: "pip install python-langserver" },
@@ -115,9 +116,9 @@ export function detectTechnologies($: any, directory: string): string[] {
   return techs;
 }
 
-// Поиск MCP серверов для технологии
-export function searchMCPServers(technology: string): MCPSearchResult[] {
-  return TECH_MAPPING[technology] || [];
+// Поиск MCP серверов для технологии — использует реестр
+export function searchMCPServers(technology: string): MCPServerDefinition[] {
+  return mcpRegistry.getByTech(technology);
 }
 
 // Установка MCP сервера
@@ -173,6 +174,26 @@ export async function validateMCP($: any, serverName: string): Promise<boolean> 
   }
 }
 
+// Получить все MCP из реестра
+export function getAllMCPRegistry(): MCPServerDefinition[] {
+  return mcpRegistry.getAll();
+}
+
+// Поиск по категории
+export function searchByCategory(category: string) {
+  return mcpRegistry.getByCategory(category as any);
+}
+
+// Поиск по тегу
+export function searchByTag(tag: string) {
+  return mcpRegistry.getByTag(tag);
+}
+
+// Получить категории
+export function getCategories() {
+  return mcpRegistry.categories;
+}
+
 export const mcpResolution = {
   loadCache,
   saveCache,
@@ -182,7 +203,11 @@ export const mcpResolution = {
   configureMcpServer,
   getMCPStatus,
   getInstalledMCPs,
-  validateMCP
+  validateMCP,
+  getAllMCPRegistry,
+  searchByCategory,
+  searchByTag,
+  getCategories
 };
 
 export default mcpResolution;

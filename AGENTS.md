@@ -272,30 +272,35 @@ opencode integrate --task-id TASK-001
 
 ## 🛡️ Quality Gates детали
 
-### Gate 1: Синтаксическая валидность
+### Gate 1: Pre-Execution (Синтаксическая валидность)
 - Проверка: код компилируется без ошибок
 - Инструменты: `tsc --noEmit` для TypeScript, `python -m py_compile` для Python
 - Порог: 100% файлов должны проходить
 
-### Gate 2: Тестовое покрытие
+### Gate 2: Post-Execution (Тестовое покрытие)
 - Проверка: покрытие unit тестами ≥ 80%
 - Инструменты: `jest --coverage`, `pytest --cov`, или эквивалент
 - Порог: среднее по проекту ≥ 80%, никакой файл < 60%
 
-### Gate 3: Безопасность linting
+### Gate 3: Pre-Commit (Безопасность linting)
 - Проверка: отсутствие критических уязвимостей
 - Инструменты: `npm audit`, `bandit`, `eslint security плагины`
 - Порог: нулевые критические предупреждения
 
-### Gate 4: Производительность benchmarks
-- Проверка: ключевые метрики не ухудшились более чем на 5%
-- Инструменты: пользовательские бенчмарки или стандарты отрасли
-- Порог: регрессия < 5% для критических путей
+### Gate 4: Pre-Merge (Интеграционные проверки)
+- Проверка: ветка влита в develop, нет конфликтов
+- Инструменты: `git branch --merged`, `git status --porcelain`
+- Порог: нет конфликтов, требуется подтверждение пользователя
 
-### Gate 5: Соответствие спецификациям
+### Gate 5: Pre-Implementation (Соответствие спецификациям)
 - Проверка: реализованы все требования из спецификаций модулей
 - Инструменты: трассировка требований к тестам (RTM)
 - Порог: 100% покрытия требований тестами с проходом
+
+### Gate 6: MCP Check (Доступность MCP серверов)
+- Проверка: доступны необходимые MCP серверы для технологий проекта
+- Инструменты: `mcpResolution.detectTechnologies()`, `mcpResolution.searchMCPServers()`
+- Порог: критические MCP (filesystem, git, memory) доступны
 
 ---
 
@@ -507,12 +512,27 @@ opencode cleanup --confirm
 
 ## 🔌 MCP Dynamic Resolution
 
+### MCP Registry
+Плагин включает реестр из 20+ MCP серверов в 12 категориях:
+
+**Базы данных:** postgres, sqlite, supabase, neo4j  
+**Поиск:** searxng, context7  
+**Файлы/Git:** filesystem, git, github  
+**Автоматизация:** playwright  
+**DevOps:** aws, kubernetes, sentry  
+**Память:** kratos, archon, memory  
+**Коммуникация:** slack
+
 ### Определение технологий
 - `mcpResolution.detectTechnologies()` — определить стек проекта
 - Python → pytest, ruff
 - TypeScript → prettier, eslint
 - Go → gopls
-- Docker → docker-langserver
+
+### Поиск MCP серверов
+- `speckit-mcp-search --technology python` — поиск по технологии
+- `speckit-mcp-search --category database` — поиск по категории
+- `speckit-mcp-list` — список всех MCP по категориям
 
 ### Установка MCP
 - `mcpResolution.searchMCPServers()` — найти серверы
@@ -521,6 +541,28 @@ opencode cleanup --confirm
 
 ### Кеширование
 - `.opencode/mcp-cache.json` — кеш установленных MCP
+
+### Quality Gate 6: MCP Check
+- Автоматическая проверка доступности MCP при переходе к фазе реализации
+- Определение технологий проекта через файловую систему
+- Поиск релевантных MCP серверов в реестре
+
+---
+
+## 🗂️ Структура проекта
+
+```
+orchestrator-kit/           # Корень проекта разработки
+├── src/                    # TypeScript код плагина
+├── dist/                   # Скомпилированный JS
+├── .opencode/             # Ресурсы плагина
+│   ├── agents/        # 16 агентов плагина
+│   ├── skills/      # 7 скиллов плагина
+│   └── dist/       # Скомпилированный (для opencode)
+├── opencode.json          # Конфиг
+├── package.json
+└── AGENTS.md           # Основная документация
+```
 
 ---
 

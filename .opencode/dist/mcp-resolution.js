@@ -45,9 +45,14 @@ exports.configureMcpServer = configureMcpServer;
 exports.getMCPStatus = getMCPStatus;
 exports.getInstalledMCPs = getInstalledMCPs;
 exports.validateMCP = validateMCP;
+exports.getAllMCPRegistry = getAllMCPRegistry;
+exports.searchByCategory = searchByCategory;
+exports.searchByTag = searchByTag;
+exports.getCategories = getCategories;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-// Карта технологий к MCP серверам
+const mcp_registry_1 = require("./mcp-registry");
+// Карта технологий к MCP серверам — использует реестр
 const TECH_MAPPING = {
     python: [
         { name: "python-langserver", type: "language-server", description: "Python LSP", installCommand: "pip install python-langserver" },
@@ -133,9 +138,9 @@ function detectTechnologies($, directory) {
     console.log("[MCP] Detected technologies:", techs.join(", "));
     return techs;
 }
-// Поиск MCP серверов для технологии
+// Поиск MCP серверов для технологии — использует реестр
 function searchMCPServers(technology) {
-    return TECH_MAPPING[technology] || [];
+    return mcp_registry_1.mcpRegistry.getByTech(technology);
 }
 // Установка MCP сервера
 async function installMCPServer($, serverName, installCommand) {
@@ -186,6 +191,22 @@ async function validateMCP($, serverName) {
         return false;
     }
 }
+// Получить все MCP из реестра
+function getAllMCPRegistry() {
+    return mcp_registry_1.mcpRegistry.getAll();
+}
+// Поиск по категории
+function searchByCategory(category) {
+    return mcp_registry_1.mcpRegistry.getByCategory(category);
+}
+// Поиск по тегу
+function searchByTag(tag) {
+    return mcp_registry_1.mcpRegistry.getByTag(tag);
+}
+// Получить категории
+function getCategories() {
+    return mcp_registry_1.mcpRegistry.categories;
+}
 exports.mcpResolution = {
     loadCache,
     saveCache,
@@ -195,6 +216,10 @@ exports.mcpResolution = {
     configureMcpServer,
     getMCPStatus,
     getInstalledMCPs,
-    validateMCP
+    validateMCP,
+    getAllMCPRegistry,
+    searchByCategory,
+    searchByTag,
+    getCategories
 };
 exports.default = exports.mcpResolution;

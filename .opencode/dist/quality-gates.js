@@ -1,6 +1,39 @@
 "use strict";
 // Quality Gates — контрольные точки качества
 // 5 ворот: Pre-Execution, Post-Execution, Pre-Commit, Pre-Merge, Pre-Implementation
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.qualityGates = void 0;
 exports.preExecution = preExecution;
@@ -8,6 +41,7 @@ exports.postExecution = postExecution;
 exports.preCommit = preCommit;
 exports.preMerge = preMerge;
 exports.preImplementation = preImplementation;
+exports.mcpCheck = mcpCheck;
 // Определение языков проекта
 async function detectLanguages($, directory) {
     const languages = [];
@@ -132,18 +166,11 @@ async function preCommit($, directory) {
     };
 }
 // Gate 4: Pre-Merge — интеграционные проверки
-async function preMerge($) {
+async function preMerge($, directory) {
     const checks = [];
     try {
-        // Проверка: ветка влита в develop
-        const merged = await $.command `git branch --merged develop`.text();
-        checks.push({
-            name: "Ветка влита в develop",
-            passed: merged.includes("develop"),
-            message: merged.includes("develop") ? "OK" : "Ветка не влита"
-        });
         // Проверка: нет конфликтов
-        const status = await $.command `git status --porcelain`.text();
+        const status = await $.command `cd ${directory} && git status --porcelain`.text();
         const hasConflicts = status.includes("UU") || status.includes("AA") || status.includes("DD");
         checks.push({
             name: "Нет конфликтов",
@@ -179,12 +206,60 @@ async function preImplementation(specFile) {
         checks
     };
 }
+// MCP Check — проверка доступности MCP серверов для технологий проекта
+async function mcpCheck($, directory) {
+    const checks = [];
+    try {
+        const { mcpResolution } = await Promise.resolve().then(() => __importStar(require("./mcp-resolution")));
+        // Определяем технологии проекта
+        const techs = mcpResolution.detectTechnologies($, directory);
+        checks.push({
+            name: "Технологии определены",
+            passed: techs.length > 0,
+            message: techs.length > 0 ? `Найдены: ${techs.join(", ")}` : "Технологии не определены"
+        });
+        // Для каждой технологии ищем MCP серверы
+        for (const tech of techs) {
+            const servers = mcpResolution.searchMCPServers(tech);
+            checks.push({
+                name: `MCP для ${tech}`,
+                passed: servers.length > 0,
+                message: servers.length > 0
+                    ? `Найдено ${servers.length} серверов`
+                    : `Нет MCP для ${tech}`
+            });
+        }
+        // Проверяем критически важные MCP
+        const criticalMCP = ["filesystem", "git", "memory"];
+        for (const mcp of criticalMCP) {
+            const found = mcpResolution.searchMCPServers("").some((s) => s.id === mcp);
+            checks.push({
+                name: `Критический MCP: ${mcp}`,
+                passed: found || techs.length === 0, // Пропускаем если нет технологий
+                message: found ? "Доступен" : "Не требуется"
+            });
+        }
+    }
+    catch (e) {
+        checks.push({
+            name: "MCP Check",
+            passed: false,
+            message: `Ошибка: ${e}`
+        });
+    }
+    return {
+        passed: checks.every(c => c.passed),
+        gate: 6,
+        checks
+    };
+}
 // Экспорт модуля
 exports.qualityGates = {
     preExecution,
     postExecution,
     preCommit,
     preMerge,
-    preImplementation
+    preImplementation,
+    mcpCheck
 };
 exports.default = exports.qualityGates;

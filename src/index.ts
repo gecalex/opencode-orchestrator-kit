@@ -6,6 +6,8 @@ import { stateMachine } from "./state-machine";
 import { preFlight } from "./pre-flight";
 import { qualityGates } from "./quality-gates";
 import { sessionHooks } from "./session-hooks";
+import { blockingRules } from "./blocking-rules";
+import { gitWorkflow } from "./git-workflow";
 
 export const OrchestratorKit: Plugin = async ({ 
   project, 
@@ -46,6 +48,12 @@ export const OrchestratorKit: Plugin = async ({
       throw new Error(`❌ Инструмент "${input.tool}" запрещён в состоянии ${currentState} (${stateMachine.getStateDescription(currentState)}).`);
     }
     
+    // Блокирующие правила проверка
+    const rulesResult = await blockingRules.checkAllRules();
+    if (!rulesResult.passed) {
+      throw new Error(`❌ Блокирующие правила не пройдены:\n${rulesResult.violations.join('\n')}`);
+    }
+
     // Gate 1: Pre-Execution проверка для task
     if (input.tool === "task") {
       const gateResult = await qualityGates.preExecution(input.args);
@@ -78,6 +86,28 @@ export const OrchestratorKit: Plugin = async ({
       if (!gateResult.passed) {
         await client.session.prompt({
           body: `⚠️ Gate 3 (Pre-Commit) предупреждение: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}`
+        });
+      }
+    }
+    
+    // Pre-Merge валидация при git merge
+    if (input.tool === "bash" && input.args?.command?.includes("git merge")) {
+      const currentBranch = await $.command`git branch --show-current`.text();
+      
+      // Проверяем что мерж в develop
+      if (input.args.command.includes("develop")) {
+        const gateResult = await qualityGates.preMerge($, directory);
+        
+        if (!gateResult.passed) {
+          await client.session.prompt({
+            body: `❌ Gate 4 (Pre-Merge) не пройден: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}\n\nМерж заблокирован.`
+          });
+          throw new Error(`❌ Мерж заблокирован: Gate 4 не пройден`);
+        }
+        
+        // Запрашиваем подтверждение пользователя
+        await client.session.prompt({
+          body: `⚠️ Вы собираетесь выполнить мерж ветки "${currentBranch}" в develop.\n\nКоммиты:\n${output?.result || 'Нет данных'}\n\nПодтвердите мерж (да/нет):`
         });
       }
     }

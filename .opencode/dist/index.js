@@ -6,6 +6,7 @@ exports.OrchestratorKit = void 0;
 const state_machine_1 = require("./state-machine");
 const quality_gates_1 = require("./quality-gates");
 const session_hooks_1 = require("./session-hooks");
+const blocking_rules_1 = require("./blocking-rules");
 const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
     // Инициализация state machine при запуске плагина
     await state_machine_1.stateMachine.initialize(directory);
@@ -31,6 +32,11 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
         // Проверка: инструмент разрешён в текущем состоянии
         if (!state_machine_1.stateMachine.isToolAllowed(input.tool, currentState)) {
             throw new Error(`❌ Инструмент "${input.tool}" запрещён в состоянии ${currentState} (${state_machine_1.stateMachine.getStateDescription(currentState)}).`);
+        }
+        // Блокирующие правила проверка
+        const rulesResult = await blocking_rules_1.blockingRules.checkAllRules();
+        if (!rulesResult.passed) {
+            throw new Error(`❌ Блокирующие правила не пройдены:\n${rulesResult.violations.join('\n')}`);
         }
         // Gate 1: Pre-Execution проверка для task
         if (input.tool === "task") {
@@ -61,6 +67,24 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
             if (!gateResult.passed) {
                 await client.session.prompt({
                     body: `⚠️ Gate 3 (Pre-Commit) предупреждение: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}`
+                });
+            }
+        }
+        // Pre-Merge валидация при git merge
+        if (input.tool === "bash" && input.args?.command?.includes("git merge")) {
+            const currentBranch = await $.command `git branch --show-current`.text();
+            // Проверяем что мерж в develop
+            if (input.args.command.includes("develop")) {
+                const gateResult = await quality_gates_1.qualityGates.preMerge($, directory);
+                if (!gateResult.passed) {
+                    await client.session.prompt({
+                        body: `❌ Gate 4 (Pre-Merge) не пройден: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}\n\nМерж заблокирован.`
+                    });
+                    throw new Error(`❌ Мерж заблокирован: Gate 4 не пройден`);
+                }
+                // Запрашиваем подтверждение пользователя
+                await client.session.prompt({
+                    body: `⚠️ Вы собираетесь выполнить мерж ветки "${currentBranch}" в develop.\n\nКоммиты:\n${output?.result || 'Нет данных'}\n\nПодтвердите мерж (да/нет):`
                 });
             }
         }

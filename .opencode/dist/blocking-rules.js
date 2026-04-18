@@ -53,6 +53,38 @@ async function checkStateValid() {
     const state = stateMachine.getCurrentState();
     return [0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(state);
 }
+// Правило 5: Git workflow - проверка что мы в feature/bugfix/hotfix ветке (кроме состояния инициализации)
+const checkGitWorkflow = async () => {
+    // Исключаем начальное состояние (0) и состояние создания конституции (10) из проверки ветки
+    const { stateMachine } = await Promise.resolve().then(() => __importStar(require("./state-machine")));
+    const state = stateMachine.getCurrentState();
+    // Для состояний 0 и 10 проверка ветки не требуется (начальная инициализация)
+    if (state === 0 || state === 10) {
+        return true;
+    }
+    try {
+        // Мы не можем напрямую вызвать git workflow здесь без контекста $ и directory
+        // Вместо этого делаем прямую проверку git
+        const { exec } = await Promise.resolve().then(() => __importStar(require("child_process")));
+        const branchResult = await new Promise((resolve, reject) => {
+            exec("git branch --show-current", (error, stdout) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    resolve(stdout.trim());
+                }
+            });
+        });
+        const branch = branchResult;
+        // Проверяем, что мы в feature/, bugfix/ или hotfix/ ветке
+        return branch.startsWith("feature/") || branch.startsWith("bugfix/") || branch.startsWith("hotfix/");
+    }
+    catch (e) {
+        // Если не можем определить ветку (например, не git репозиторий), считаем что проверка не пройдена
+        return false;
+    }
+};
 // Правило 2: Пре-условия для аналитиков
 async function checkAnalystPreconditions() {
     // Аналитики должны иметь доступ к спецификациям
@@ -74,7 +106,8 @@ const RULES = new Map([
     ["state-valid", { id: "state-valid", name: "State Valid", description: "Состояние должно быть валидным", severity: "error", check: checkStateValid }],
     ["analyst-preconditions", { id: "analyst-preconditions", name: "Analyst Preconditions", description: "Доступны спецификации", severity: "error", check: checkAnalystPreconditions }],
     ["coder-tdd", { id: "coder-tdd", name: "Coder TDD", description: "Тесты пройдены перед кодом", severity: "error", check: checkCoderPreconditions }],
-    ["reviewer-enabled", { id: "reviewer-enabled", name: "Reviewer Enabled", description: "Директория REPORTS существует", severity: "warning", check: checkReviewerPreconditions }]
+    ["reviewer-enabled", { id: "reviewer-enabled", name: "Reviewer Enabled", description: "Директория REPORTS существует", severity: "warning", check: checkReviewerPreconditions }],
+    ["git-workflow", { id: "git-workflow", name: "Git Workflow", description: "Работа должна происходить в feature/bugfix/hotfix ветке", severity: "error", check: checkGitWorkflow }]
 ]);
 // Проверка всех правил
 async function checkAllRules() {

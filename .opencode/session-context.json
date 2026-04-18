@@ -1,0 +1,18 @@
+{
+  "savedAt": "2026-04-18T03:30:00.000Z",
+  "currentBranch": "develop",
+  "lastCommit": "5af7568",
+  "stage": "Этап 2 завершён",
+  "completedTasks": ["T-101", "T-102", "T-103", "T-104", "T-105", "T-201", "T-202", "T-203", "T-204", "T-205", "T-206"],
+  "nextTask": "T-301 (Этап 3: MCP Dynamic Resolution System)",
+  "components": [
+    "src/state-machine.ts",
+    "src/session-hooks.ts",
+    "src/tools.ts",
+    "src/review-sessions.ts",
+    "src/tdd-workflow.ts",
+    "src/user-approval.ts",
+    "src/quality-gates.ts",
+    "AGENTS.md"
+  ]
+}

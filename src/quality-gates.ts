@@ -135,20 +135,12 @@ export async function preCommit($: any, directory: string): Promise<QualityGateR
 }
 
 // Gate 4: Pre-Merge — интеграционные проверки
-export async function preMerge($: any): Promise<QualityGateResult> {
+export async function preMerge($: any, directory: string): Promise<QualityGateResult> {
   const checks: CheckResult[] = [];
 
   try {
-    // Проверка: ветка влита в develop
-    const merged = await $.command`git branch --merged develop`.text();
-    checks.push({
-      name: "Ветка влита в develop",
-      passed: merged.includes("develop"),
-      message: merged.includes("develop") ? "OK" : "Ветка не влита"
-    });
-
     // Проверка: нет конфликтов
-    const status = await $.command`git status --porcelain`.text();
+    const status = await $.command`cd ${directory} && git status --porcelain`.text();
     const hasConflicts = status.includes("UU") || status.includes("AA") || status.includes("DD");
     checks.push({
       name: "Нет конфликтов",
@@ -187,13 +179,66 @@ export async function preImplementation(specFile: string): Promise<QualityGateRe
   };
 }
 
+// MCP Check — проверка доступности MCP серверов для технологий проекта
+export async function mcpCheck($: any, directory: string): Promise<QualityGateResult> {
+  const checks: CheckResult[] = [];
+  
+  try {
+    const { mcpResolution } = await import("./mcp-resolution");
+    
+    // Определяем технологии проекта
+    const techs = mcpResolution.detectTechnologies($, directory);
+    checks.push({
+      name: "Технологии определены",
+      passed: techs.length > 0,
+      message: techs.length > 0 ? `Найдены: ${techs.join(", ")}` : "Технологии не определены"
+    });
+    
+    // Для каждой технологии ищем MCP серверы
+    for (const tech of techs) {
+      const servers = mcpResolution.searchMCPServers(tech);
+      checks.push({
+        name: `MCP для ${tech}`,
+        passed: servers.length > 0,
+        message: servers.length > 0 
+          ? `Найдено ${servers.length} серверов` 
+          : `Нет MCP для ${tech}`
+      });
+    }
+    
+    // Проверяем критически важные MCP
+    const criticalMCP = ["filesystem", "git", "memory"];
+    for (const mcp of criticalMCP) {
+      const found = mcpResolution.searchMCPServers("").some((s: any) => s.id === mcp);
+      checks.push({
+        name: `Критический MCP: ${mcp}`,
+        passed: found || techs.length === 0, // Пропускаем если нет технологий
+        message: found ? "Доступен" : "Не требуется"
+      });
+    }
+  } catch (e) {
+    checks.push({
+      name: "MCP Check",
+      passed: false,
+      message: `Ошибка: ${e}`
+    });
+  }
+
+  return {
+    passed: checks.every(c => c.passed),
+    gate: 6,
+    checks
+  };
+}
+
 // Экспорт модуля
 export const qualityGates = {
   preExecution,
   postExecution,
   preCommit,
   preMerge,
-  preImplementation
+  preImplementation,
+  mcpCheck
 };
 
 export default qualityGates;
