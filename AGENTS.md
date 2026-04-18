@@ -483,4 +483,85 @@ opencode cleanup --confirm
 - `.opencode/error-log.json` — журнал ошибок
 
 ---
+
+## 🔄 TDD Workflow (TEST/CODE)
+
+### Обязательное разделение
+Каждая кодовая задача требует先 TEST задачи:
+
+```
+1. TEST: Написать тесты (должны упасть - RED)
+2. CODE: Написать код (тесты проходят - GREEN)
+3. REFACTOR: Рефакторинг
+```
+
+### Проверки
+- `tddWorkflow.registerTestTask()` — связать TEST и CODE задачи
+- `tddWorkflow.canStartCode()` — проверить готовность
+- `tddWorkflow.tryStartCodeTask()` — начать кодовую задачу
+
+### Блокировка
+Кодер **не может** начать работу, пока тесты не пройдены.
+
+---
+
+## 🔌 MCP Dynamic Resolution
+
+### Определение технологий
+- `mcpResolution.detectTechnologies()` — определить стек проекта
+- Python → pytest, ruff
+- TypeScript → prettier, eslint
+- Go → gopls
+- Docker → docker-langserver
+
+### Установка MCP
+- `mcpResolution.searchMCPServers()` — найти серверы
+- `mcpResolution.installMCPServer()` — установить
+- `mcpResolution.validateMCP()` — проверить работоспособность
+
+### Кеширование
+- `.opencode/mcp-cache.json` — кеш установленных MCP
+
+---
+
+## 🛡️ Принцип минимальных привилегий
+
+### Матрица разрешений
+| Роль | write | edit | bash | read |
+|------|-------|------|------|------|
+| python-developer | ✅ | ✅ | ⚠️ | ✅ |
+| code-reviewer | ❌ | ❌ | ⚠️ | ✅ |
+| security-auditor | ❌ | ❌ | ⚠️ | ✅ |
+
+### Проверка
+- `permissions.checkPermission()` — проверить разрешение
+- `permissions.checkPermissionWithInheritance()` — с наследованием
+
+### Аудит
+- `.opencode/permission-audit.json` — журнал использования
+
+---
+
+## 🎯 Приложения
+
+### Типичные ошибки
+| Ошибка | Решение |
+|-------|---------|
+| Агент пишет код без тестов | Блокировать, направить на TEST |
+| Нет разрешения | Проверить матрицу |
+| MCP не найден | Запустить mcpResolution |
+
+### Команды
+```bash
+# Анализ состояния
+opencode analyze-state
+
+# Качество
+opencode quality-gate --all
+
+# Отчёты
+opencode reports --limit 5
+```
+
+---
 *Документ поддерживается в актуальном состоянии и обновляется при каждой значительной версии плагина.*
