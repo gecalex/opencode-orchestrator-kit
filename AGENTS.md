@@ -413,4 +413,74 @@ opencode cleanup --confirm
 ```
 
 ---
+
+## 🔌 Кастомные инструменты
+
+### speckit-analyze-state
+Определение текущего состояния проекта.
+
+**Использование**: `speckit-analyze-state`
+
+**Результат**:
+```json
+{
+  "code": 40,
+  "description": "Задачи разбиты и агенты назначены",
+  "allowedAgents": ["project-initializer", "constitution-agent", ...],
+  "blockedAgents": ["python-developer", ...],
+  "allowedTools": ["run_shell_command", ...]
+}
+```
+
+### speckit-pre-flight-check
+Запуск предварительных проверок готовности проекта.
+
+**Использование**: `speckit-pre-flight-check`
+
+**Результат**:
+```json
+{
+  "passed": 8,
+  "failed": 2,
+  "errors": ["...", "..."]
+}
+```
+
+### speckit-quality-gate-run
+Выполнение Quality Gate проверок.
+
+**Использование**: `speckit-quality-gate-run --gate preExecution --args {...}`
+
+**Доступные gates**:
+- `preExecution` — проверка задачи перед выполнением
+- `postExecution` — проверка результата после выполнения
+- `preCommit` — проверка перед коммитом
+- `preMerge` — проверка перед мержем
+- `preImplementation` — проверка спецификаций
+
+### speckit-task-delegator
+Делегирование задачи агенту с валидацией.
+
+**Использование**: `speckit-task-delegator --prompt "..." --subagent_type "python-developer"`
+
+---
+
+## 🔄 События сессий
+
+Плагин автоматически обрабатывает события сессий:
+
+| Событие | Описание | Файлы |
+|--------|----------|-------|
+| `session.created` | Начало сессии | Pre-Flight + определение состояния |
+| `session.idle` | Завершение сессии | Сохранение контекста |
+| `session.compacted` | Компактация контекста | Восстановление контекста |
+| `session.error` | Ошибка в сессии | Логирование в error-log.json |
+
+**Файлы контекста**:
+- `.opencode/state.json` — текущее состояние
+- `.opencode/state-log.json` — история переходов
+- `.opencode/session-context.json` — контекст сессии
+- `.opencode/error-log.json` — журнал ошибок
+
+---
 *Документ поддерживается в актуальном состоянии и обновляется при каждой значительной версии плагина.*
