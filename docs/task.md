@@ -48,12 +48,12 @@
 - [x] Статус: completed
 
 ### T-202: Добавление системы специализированных агентов
-- [ ] Реализовать планировщиков (plan-agent, tasks-agent, planning-task-analyzer)
-- [ ] Реализовать рецензентов (specification-analyst, code-reviewer)
-- [ ] Реализовать кодеров (python-developer, go-developer, react-developer и т.д.)
-- [ ] Реализовать тестировщиков (python-specialist, go-specialist, ts-specialist)
-- [ ] Реализовать специализированных агентов (devops, security и т.д.)
-- [ ] Статус: pending
+- [x] Реализовать планировщиков (plan-agent, tasks-agent, planning-task-analyzer)
+- [x] Реализовать рецензентов (specification-analyst, code-reviewer)
+- [x] Реализовать кодеров (python-developer, go-developer, react-developer и т.д.)
+- [x] Реализовать тестировщиков (python-specialist, go-specialist, ts-specialist)
+- [x] Реализовать специализированных агентов (devops, security)
+- [x] Статус: completed
 
 ### T-203: Реализация изолированных сессий рецензирования для проверки артефактов
 - [ ] Создать механизм изолированных сессий для проверки артефактов
