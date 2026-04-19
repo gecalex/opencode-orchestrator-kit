@@ -28,7 +28,7 @@ interface SessionError {
 }
 
 // Логирование в файл (тихое)
-function logToFile(message: string, type: "info" | "debug" | "error" = "info"): void {
+export function logToFile(message: string, type: "info" | "debug" | "error" = "info"): void {
   if (!LOG_ENABLED && type === "info") return;
   try {
     const logsDir = path.join(process.cwd(), LOGS_DIR);

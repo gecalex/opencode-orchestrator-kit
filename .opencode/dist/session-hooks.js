@@ -36,6 +36,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sessionHooks = void 0;
+exports.logToFile = logToFile;
 exports.saveContext = saveContext;
 exports.loadContext = loadContext;
 exports.logError = logError;

@@ -5,7 +5,7 @@ import type { Plugin } from "@opencode-ai/plugin";
 import { stateMachine } from "./state-machine";
 import { preFlight } from "./pre-flight";
 import { qualityGates } from "./quality-gates";
-import { sessionHooks } from "./session-hooks";
+import { sessionHooks, saveContext } from "./session-hooks";
 import { blockingRules } from "./blocking-rules";
 import { gitWorkflow } from "./git-workflow";
 
@@ -42,7 +42,7 @@ export const OrchestratorKit: Plugin = async ({
   // Pre-tool hook — выполняется перед каждым инструментом
   const toolExecuteBefore = async (input: any, output: any) => {
     const currentState = stateMachine.getCurrentState();
-    
+
     // Проверка: инструмент разрешён в текущем состоянии
     if (!stateMachine.isToolAllowed(input.tool, currentState)) {
       throw new Error(`❌ Инструмент "${input.tool}" запрещён в состоянии ${currentState} (${stateMachine.getStateDescription(currentState)}).`);
