@@ -136,7 +136,18 @@ function logError(directory, error, context) {
 // Обработчик session.created
 async function onSessionCreated($, directory, client) {
     const errors = [];
-    // Pre-Flight проверки
+    // Проверка и инициализация git ДО Pre-Flight
+    const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+    if (hasGit.trim() !== "yes") {
+        await client.session.prompt({
+            body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+        });
+        await $.task({
+            subagent_type: "project-initializer",
+            prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
+        });
+    }
+    // Pre-Flight проверки ПОСЛЕ инициализации
     const preFlightResult = await pre_flight_1.preFlight.run($, directory);
     if (!preFlightResult.success) {
         errors.push(...preFlightResult.errors);
@@ -147,24 +158,6 @@ async function onSessionCreated($, directory, client) {
     }
     // Определение состояния проекта
     const projectState = await state_machine_1.stateMachine.getState($, directory);
-    // Проверка: если нет git репозитория - вызвать project-initializer
-    const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
-    if (hasGit.trim() !== "yes") {
-        await client.session.prompt({
-            body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
-        });
-        // Вызов project-initializer
-        await $.task({
-            subagent_type: "project-initializer",
-            prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
-        });
-        // Повторное определение состояния после инициализации
-        const newState = await state_machine_1.stateMachine.getState($, directory);
-        await client.session.prompt({
-            body: `✅ Pre-Flight пройден\n✅ Инициализация завершена\n\nСостояние проекта: ${newState.code} (${newState.description})\n\nРазрешённые агенты: ${newState.allowedAgents.join(", ")}`
-        });
-        return { success: true, errors: [] };
-    }
     await client.session.prompt({
         body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
 
