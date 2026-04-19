@@ -176,7 +176,40 @@ async function onSessionCreated($, directory, client) {
     await saveContext(directory, {
         state: projectState.code
     });
+    // Автоматический вызов агента на основе state
+    await autoDelegateAgent($, client, projectState.code, directory);
     return { success: true, errors: [] };
+}
+// Автоматический вызов агента по state
+async function autoDelegateAgent($, client, state, directory) {
+    const agentsByState = {
+        0: {
+            type: "constitution-agent",
+            prompt: `Создай конституцию проекта на основе TZ.md в директории ${directory}. Используй шаблон конституции.`
+        },
+        10: {
+            type: "specify-agent",
+            prompt: `Создай спецификации модулей на основе CONSTITUTION.md в директории ${directory}.`
+        },
+        20: {
+            type: "plan-agent",
+            prompt: `Создай план реализации на основе specs/ в директории ${directory}.`
+        },
+        30: {
+            type: "tasks-agent",
+            prompt: `Создай список задач на основе PLAN.md в директории ${directory}.`
+        }
+    };
+    const agentConfig = agentsByState[state];
+    if (agentConfig) {
+        await client.session.prompt({
+            body: `🚀 Автоматический переход: state ${state} → вызываю ${agentConfig.type}...`
+        });
+        await $.task({
+            subagent_type: agentConfig.type,
+            prompt: agentConfig.prompt
+        });
+    }
 }
 // Обработчик session.idle
 async function onSessionIdle(directory, client) {
