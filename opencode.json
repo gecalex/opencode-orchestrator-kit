@@ -67,18 +67,18 @@
   },
   "mcp": {
     "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/alex/MyProjects/opencode_orc_kit"],
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/home/alex/MyProjects/opencode_orc_kit"],
       "enabled": true
     },
     "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "enabled": true
     },
     "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
       "enabled": true
     },
     "context7": {
@@ -94,7 +94,8 @@
     "sentry": {
       "type": "remote",
       "url": "https://mcp.sentry.dev/mcp",
+      "oauth": {},
       "enabled": false
     }
   }
-}
+} 
