@@ -198,22 +198,40 @@ function loadState(directory: string): ProjectStateCode | null {
 // Определение состояния по ФС
 async function detectStateFromFS($: any, directory: string): Promise<ProjectStateCode> {
   try {
-    const hasConstitutionResult = await $.command`test -f ${directory}/PROJECT.md && echo "yes"`.text();
+    // Проверка git инициализации
+    const hasGitResult = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+    const hasGit = hasGitResult.trim() === "yes";
+
+    // Проверка CONSTITUTION.md (основная конституция)
+    const hasConstitutionResult = await $.command`test -f ${directory}/CONSTITUTION.md && echo "yes"`.text();
     const hasConstitution = hasConstitutionResult.trim() === "yes";
 
-    const hasSpecsResult = await $.command`find ${directory}/SPEC -type f -name "*.md" 2>/dev/null | head -1`.text();
+    // Проверка specs/ директории (спецификации модулей)
+    const hasSpecsResult = await $.command`find ${directory}/specs -type f -name "*.md" 2>/dev/null | head -1`.text();
     const hasSpecs = hasSpecsResult.trim().length > 0;
 
+    // Проверка PLAN.md (план проекта)
+    const hasPlanResult = await $.command`test -f ${directory}/PLAN.md && echo "yes"`.text();
+    const hasPlan = hasPlanResult.trim() === "yes";
+
+    // Проверка docs/task.md (задачи)
     const hasTasksResult = await $.command`test -f ${directory}/docs/task.md && echo "yes"`.text();
     const hasTasks = hasTasksResult.trim() === "yes";
 
+    // Проверка src/ директории (есть код)
     const hasImplResult = await $.command`find ${directory}/src -type f 2>/dev/null | head -1`.text();
     const hasImpl = hasImplResult.trim().length > 0;
 
+    // Логика определения состояния
+    // 40: Есть всё - задачи назначены
     if (hasImpl && hasTasks && hasSpecs && hasConstitution) return 40;
+    // 30: Есть план (задачи)
     if (hasImpl && hasTasks && hasSpecs) return 30;
-    if (hasTasks && hasSpecs) return 20;
-    if (hasSpecs || hasConstitution) return 10;
+    // 20: Есть спецификации + план
+    if (hasSpecs && hasPlan) return 20;
+    // 10: Есть конституция
+    if (hasConstitution) return 10;
+    // 0: Ничего нет или только git
     return 0;
   } catch {
     return 0;
