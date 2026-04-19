@@ -10,72 +10,72 @@ const LOG_FILE = ".opencode/state-log.json";
 
 // Определение состояний (12 фаз workflow)
 const STATES: Record<ProjectStateCode, ProjectState> = {
-  0: {
-    code: 0,
-    description: "Инициализация (создан репозиторий, но нет конституции)",
+  1: {
+    code: 1,
+    description: "Пустой проект (директория создана, нет ничего)",
     allowedAgents: ["project-initializer", "constitution-agent"],
     blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     allowedTools: ["read", "glob", "grep", "skill", "todowrite", "task", "write", "question", "bash"]
   },
-  10: {
-    code: 10,
-    description: "Конституция создана (основные требования и ограничения)",
+  2: {
+    code: 2,
+    description: "Проект инициализирован (есть git, но нет конституции)",
     allowedAgents: ["project-initializer", "constitution-agent"],
     blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     allowedTools: ["read", "glob", "grep", "skill", "todowrite", "task"]
   },
-  20: {
-    code: 20,
-    description: "Спецификации модулей созданы (детальное описание компонентов)",
+  3: {
+    code: 3,
+    description: "Конституция создана (основные требования и ограничения)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst"],
     blockedAgents: ["plan-agent", "tasks-agent", "planning-task-analyzer", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     allowedTools: ["read", "glob", "grep", "skill", "todowrite", "task"]
   },
-  30: {
-    code: 30,
-    description: "План реализации готов (оценка усилий, зависимости, риски)",
+  4: {
+    code: 4,
+    description: "Спецификации модулей созданы (детальное описание компонентов)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "planning-task-analyzer"],
     blockedAgents: ["tasks-agent", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  40: {
-    code: 40,
-    description: "Задачи разбиты и агенты назначены (готов к выполнению)",
+  5: {
+    code: 5,
+    description: "План реализации готов (оценка усилий, зависимости, риски)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator"],
     blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  50: {
-    code: 50,
-    description: "Тестовая фаза (написание и выполнение тестов)",
+  6: {
+    code: 6,
+    description: "Задачи разбиты и агенты назначены (готов к выполнению)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-specialist", "go-specialist", "ts-specialist"],
     blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "devops", "security"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  60: {
-    code: 60,
-    description: "Кодинговая фаза (написание кода под тесты)",
+  7: {
+    code: 7,
+    description: "Тестовая фаза (написание и выполнение тестов)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer"],
     blockedAgents: ["work_*", "devops", "security"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  70: {
-    code: 70,
-    description: "Фаза интеграции (объединение компонентов и системное тестирование)",
+  8: {
+    code: 8,
+    description: "Кодинговая фаза (написание кода под тесты)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops"],
     blockedAgents: ["work_*", "security"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  80: {
-    code: 80,
-    description: "Релиз-готов (все качественные gate пройдены, готово к релизу)",
+  9: {
+    code: 9,
+    description: "Фаза интеграции (объединение компонентов и системное тестирование)",
     allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
     blockedAgents: ["work_*"],
     allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
   },
-  90: {
-    code: 90,
-    description: "Релиз выполнен (версия опубликована в main)",
+  10: {
+    code: 10,
+    description: "Релиз-готов (все качественные gate пройдены, готово к релизу)",
     allowedAgents: [],
     blockedAgents: ["work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security", "constitution-agent", "specify-agent", "specification-analyst", "plan-agent", "tasks-agent", "planning-task-analyzer", "tdd-coordinator"],
     allowedTools: ["read_file", "glob", "grep_search"]
@@ -93,63 +93,63 @@ interface Transition {
 // Определение переходов
 const TRANSITIONS: Transition[] = [
   {
-    from: 0,
-    to: 10,
-    condition: async () => true, // Всегда при инициализации
+    from: 1,
+    to: 2,
+    condition: async () => true, // После инициализации
+    reason: "Проект инициализирован"
+  },
+  {
+    from: 2,
+    to: 3,
+    condition: async (_, __) => true, // После создания конституции
     reason: "Создание конституции"
   },
   {
-    from: 10,
-    to: 20,
+    from: 3,
+    to: 4,
     condition: async (_, __) => true, // После создания спецификаций
     reason: "Спецификации созданы"
   },
   {
-    from: 20,
-    to: 30,
+    from: 4,
+    to: 5,
     condition: async (_, __) => true, // После плана
     reason: "План реализации готов"
   },
   {
-    from: 30,
-    to: 40,
+    from: 5,
+    to: 6,
     condition: async (_, __) => true, // После разбивки на задачи
     reason: "Задачи назначены"
   },
   {
-    from: 40,
-    to: 50,
+    from: 6,
+    to: 7,
     condition: async (_, __) => true, // Переход к тестам
     reason: "Переход к тестовой фазе"
   },
   {
-    from: 50,
-    to: 60,
+    from: 7,
+    to: 8,
     condition: async (_, __) => true, // Тесты готовы
     reason: "Тесты пройдены, переход к кодингу"
   },
   {
-    from: 60,
-    to: 70,
+    from: 8,
+    to: 9,
     condition: async (_, __) => true, // Код готов
     reason: "Код реализован"
   },
   {
-    from: 70,
-    to: 80,
+    from: 9,
+    to: 10,
     condition: async (_, __) => true, // Интеграция завершена
     reason: "Интеграция завершена"
-  },
-  {
-    from: 80,
-    to: 90,
-    condition: async (_, __) => true, // Релиз
-    reason: "Релиз выполнен"
   }
 ];
 
-// Текущее состояние
-let currentState: ProjectStateCode = 10;
+// Текущее состояние по умолчанию
+let currentState: ProjectStateCode = 1;
 
 // История переходов
 const stateLog: Array<{from: ProjectStateCode; to: ProjectStateCode; timestamp: string; reason?: string}> = [];
@@ -223,27 +223,26 @@ async function detectStateFromFS($: any, directory: string): Promise<ProjectStat
     const hasImpl = hasImplResult.trim().length > 0;
 
     // Логика определения состояния
-    // 40: Есть всё - задачи назначены
-    if (hasImpl && hasTasks && hasSpecs && hasConstitution) return 40;
-    // 30: Есть план (задачи)
-    if (hasImpl && hasTasks && hasSpecs) return 30;
-    // 20: Есть спецификации + план
-    if (hasSpecs && hasPlan) return 20;
-    // 10: Есть конституция
-    if (hasConstitution) return 10;
-    // 0: Ничего нет или только git
-    return 0;
+    // 10: Есть всё - интеграция завершена
+    if (hasImpl && hasTasks && hasSpecs && hasConstitution) return 10;
+    // 9: Есть код и задачи
+    if (hasImpl && hasTasks && hasSpecs) return 9;
+    // 8: Есть спецификации + план
+    if (hasSpecs && hasPlan) return 8;
+    // 7: Есть конституция
+    if (hasConstitution) return 7;
+    // 3: Есть git (инициализирован)
+    return 3;
   } catch {
-    return 0;
+    return 1;
   }
 }
 
 // Инициализация
 export async function initialize(directory: string): Promise<ProjectState> {
   const saved = loadState(directory);
-  // Для нового проекта (нет state.json) — состояние 0
-  // Это позволяет использовать все инструменты для анализа и создания конституции
-  currentState = saved !== null ? saved : 0;
+  // Для нового проекта (нет state.json) — состояние 1 (пустой проект)
+  currentState = saved !== null ? saved : 1;
   saveState(currentState, directory);
   return STATES[currentState];
 }

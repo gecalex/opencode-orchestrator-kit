@@ -70,11 +70,11 @@ async function checkStateValid() {
 }
 // Правило 5: Git workflow - проверка что мы в feature/bugfix/hotfix ветке (кроме состояния инициализации)
 const checkGitWorkflow = async () => {
-    // Исключаем начальное состояние (0) и состояние создания конституции (10) из проверки ветки
+    // Исключаем начальное состояние (1) и состояние создания конституции (3) из проверки ветки
     const { stateMachine } = await Promise.resolve().then(() => __importStar(require("./state-machine")));
     const state = stateMachine.getCurrentState();
-    // Для состояний 0 и 10 проверка ветки не требуется (начальная инициализация)
-    if (state === 0 || state === 10) {
+    // Для состояний 1 (пустой) и 3 (конституция) проверка ветки не требуется
+    if (state === 1 || state === 3) {
         return true;
     }
     try {
@@ -103,12 +103,12 @@ const checkGitWorkflow = async () => {
 // Правило 2: Пре-условия для аналитиков
 async function checkAnalystPreconditions() {
     // Аналитики должны иметь доступ к спецификациям
-    // Но для состояний 0 и 10 (нет конституции/спецификаций) - это нормально
+    // Но для состояний 1 (пустой) и 3 (конституция) - это нормально
     const { stateMachine } = await Promise.resolve().then(() => __importStar(require("./state-machine")));
     const state = stateMachine.getCurrentState();
-    // Для состояний 0 и 10 проверка спецификаций не требуется
+    // Для состояний 1 и 3 проверка спецификаций не требуется
     // Оркестратор может анализировать проект и создавать конституцию/спецификации
-    if (state === 0 || state === 10) {
+    if (state === 1 || state === 3) {
         return true;
     }
     // Для остальных состояний требуются спецификации

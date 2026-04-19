@@ -138,23 +138,24 @@ export async function onSessionCreated($: any, directory: string, client: any): 
   // Проверка и инициализация git ДО Pre-Flight
   logToFile(`Проверка: hasGit="${hasGit.trim()}"`, "debug");
 
+  // State 1 = пустой проект, State 2 = инициализирован
   if (hasGit.trim() !== "yes") {
-    logToFile("Запуск project-initializer...", "debug");
+    logToFile("Запуск project-initializer (state 1 -> 2)...", "debug");
     try {
       await client.session.prompt({
-        body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+        body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта (state 1 -> 2)...`
       });
 
       await ($.task as any)({
         subagent_type: "project-initializer",
         prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
       });
-      logToFile("project-initializer завершен", "debug");
+      logToFile("project-initializer завершен, state = 2", "debug");
     } catch (e: any) {
       logToFile(`Ошибка project-initializer: ${e.message}`, "error");
     }
   } else {
-    logToFile("Git уже есть, пропускаем инициализацию", "debug");
+    logToFile("Git уже есть, state = 2", "debug");
   }
 
   // Pre-Flight проверки ПОСЛЕ инициализации
@@ -205,19 +206,19 @@ async function autoDelegateAgent($: any, client: any, state: number, directory: 
   logToFile(`=== autoDelegateAgent START: State=${state} ===`, "debug");
 
   const agentsByState: Record<number, { type: string; prompt: string }> = {
-    0: {
+    2: {
       type: "constitution-agent",
       prompt: `Создай конституцию проекта на основе TZ.md в директории ${directory}. Используй шаблон конституции.`
     },
-    10: {
+    3: {
       type: "specify-agent",
       prompt: `Создай спецификации модулей на основе CONSTITUTION.md в директории ${directory}.`
     },
-    20: {
+    4: {
       type: "plan-agent",
       prompt: `Создай план реализации на основе specs/ в директории ${directory}.`
     },
-    30: {
+    5: {
       type: "tasks-agent",
       prompt: `Создай список задач на основе PLAN.md в директории ${directory}.`
     }
