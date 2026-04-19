@@ -9,6 +9,65 @@ import { sessionHooks, saveContext } from "./session-hooks";
 import { blockingRules } from "./blocking-rules";
 import { gitWorkflow } from "./git-workflow";
 
+// Функция авто-инициализации при загрузке плагина (через config hook)
+async function autoInitOnPluginLoad($: any, directory: string, client: any): Promise<boolean> {
+  try {
+    // Проверка: есть .git?
+    const hasGitDir = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+    const hasGit = hasGitDir.trim() === "yes";
+    
+    if (!hasGit) {
+      // Инициализация Git
+      await $.command`git init`.text();
+      await $.command`git checkout -b develop`.text();
+      
+      // Создание базового .gitignore
+      await $.command`cat > .gitignore << 'EOF'
+node_modules/
+.env
+dist/
+.DS_Store
+*.log
+.tmp/
+.vscode/
+.idea/
+EOF`.text();
+      
+      // Создание базового README
+      await $.command`cat > README.md << 'EOF'
+# Project
+
+Personal project created by Orchestrator Kit.
+
+## Getting Started
+
+Run \`opencode\` to start working on this project.
+EOF`.text();
+      
+      // Первый коммит
+      await $.command`git add -A && git commit -m "feat: initialize project with Orchestrator Kit"`.text();
+      
+      // Обновляем state
+      stateMachine.setState(2, "Инициализация завершена");
+      
+      return true;
+    }
+    
+    // Проверка: есть AGENTS.md (или QWEN.md)?
+    const hasAgents = await $.command`test -f ${directory}/AGENTS.md && echo "yes"`.text();
+    const hasQwen = await $.command`test -f ${directory}/QWEN.md && echo "yes"`.text();
+    
+    if (hasAgents.trim() !== "yes" && hasQwen.trim() !== "yes") {
+      console.log("[OrchestratorKit] AGENTS.md не найден в проекте. Рекомендуется использовать /init для инициализации.");
+    }
+    
+    return false;
+  } catch (e) {
+    console.error("[OrchestratorKit] Ошибка инициализации:", e);
+    return false;
+  }
+}
+
 export const OrchestratorKit: Plugin = async ({
   project,
   client,
@@ -18,6 +77,16 @@ export const OrchestratorKit: Plugin = async ({
 }) => {
   // Инициализация state machine при запуске плагина
   await stateMachine.initialize(directory);
+
+  // Выполняем авто-инициализацию при загрузке плагина
+  // Это обходит баг с tool.execute.before для subagent
+  const wasInitialized = await autoInitOnPluginLoad($, directory, client);
+  
+  if (wasInitialized) {
+    await client.session.prompt({
+      body: "✅ Проект инициализирован! Git репозиторий создан, ветка develop активирована.\n\nТеперь можно работать с оркестратором."
+    });
+  }
 
   // Обработчик событий (делегируем в session-hooks.ts)
   const eventHandler = async (input: any, output: any) => {
@@ -39,40 +108,9 @@ export const OrchestratorKit: Plugin = async ({
     }
   };
 
-  // Pre-tool hook — выполняется перед каждым инструментом
-  let initialized = false;
-
+// Pre-tool hook — выполняется перед каждым инструментом
   const toolExecuteBefore = async (input: any, output: any) => {
-    // Инициализация при ПЕРВОМ вызове любого инструмента
-    if (!initialized) {
-      initialized = true;
-      const currentState = stateMachine.getCurrentState();
-
-      // Если state 1 (пустой) и нет .git - инициализируем
-      if (currentState === 1) {
-        try {
-          const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
-          if (hasGit.trim() !== "yes") {
-            // Инициализация через shell
-            await $.command`git init && git checkout -b develop`.text();
-            await $.command`echo -e "node_modules/\n.env\ndist/\n.DS_Store\n" > .gitignore`.text();
-            await $.command`echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
-            await $.command`git add -A && git commit -m "feat: initialize project"`.text();
-
-            // Обновляем state
-            stateMachine.setState(2, "Инициализация завершена");
-            await stateMachine.getState($, directory);
-
-            await client.session.prompt({
-              body: "✅ Проект инициализирован! Git репозиторий создан, ветка develop активирована."
-            });
-          }
-        } catch (e) {
-          console.error("Ошибка инициализации:", e);
-        }
-      }
-    }
-
+    // Инициализация теперь через autoInitOnPluginLoad при загрузке плагина
     const currentState = stateMachine.getCurrentState();
 
     // Проверка: инструмент разрешён в текущем состоянии
