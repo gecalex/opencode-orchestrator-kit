@@ -88,7 +88,7 @@
     },
     "searxng": {
       "type": "remote",
-      "url": "http://localhost:8080/mcp",
+      "url": "http://localhost:3002/mcp",
       "enabled": true
     },
     "sentry": {
