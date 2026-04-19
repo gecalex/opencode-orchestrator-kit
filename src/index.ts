@@ -129,6 +129,64 @@ async function logToFile($: any, directory: string, message: string) {
   await $.command`echo "${timestamp} | ${message}" >> ${logFile} 2>/dev/null || true`.text();
 }
 
+// Функция отображения текущего состояния и следующих шагов
+function getStateDescription(code: number): string {
+  const descriptions: Record<number, string> = {
+    1: "Пустой проект (директория создана, нет ничего)",
+    2: "Проект инициализирован (есть .git)",
+    3: "Конституция создана (основные требования и ограничения)",
+    4: "Спецификации модулей созданы (детальное описание компонентов)",
+    5: "План реализации готов (оценка усилий, зависимости, риски)",
+    6: "Задачи разбиты и агенты назначены (готов к выполнению)",
+    7: "Тестовая фаза (написание и выполнение тестов)",
+    8: "Кодинговая фаза (написание кода под тесты)",
+    9: "Фаза интеграции (объединение компонентов и системное тестирование)",
+    10: "Релиз-готов (все качественные gate пройдены, готово к релизу)"
+  };
+  return descriptions[code] || "Неизвестное состояние";
+}
+
+function getNextSteps(currentState: number): string[] {
+  const nextSteps: Record<number, string[]> = {
+    1: ["Инициализировать проект: создать .git, .gitignore, README.md"],
+    2: ["Создать конституцию проекта (PROJECT.md)"],
+    3: ["Создать спецификации модулей (SPEC/{module}.md)"],
+    4: ["Проанализировать противоречия в спецификациях"],
+    5: ["Создать план реализации (IMPLEMENTATION_PLAN.md)"],
+    6: ["Разбить на задачи с зависимостями (TASKS.md)"],
+    7: ["Назначить агентов на задачи"],
+    8: ["Запустить TDD цикл: тесты → код"],
+    9: ["Выполнить интеграцию и финальное тестирование"],
+    10: ["Подготовить релиз и завершить проект"]
+  };
+  return nextSteps[currentState] || ["Ожидание действий"];
+}
+
+// Функция формирования диалога подтверждения
+function formatConfirmationDialog(phaseName: string, results: string[], nextStep: string): string {
+  return `✅ ${phaseName} завершена!
+
+Результат:
+${results.map(r => `- ${r}`).join('\n')}
+
+Следующий шаг: ${nextStep}
+
+Продолжить? (да/нет)`;
+}
+
+// Функция формирования результата инициализации
+function formatInitDialog(): string {
+  return `✅ Подготовка завершена!
+
+Создано:
+- Git репозиторий инициализирован
+- Ветка develop активирована
+
+Следующий шаг: Создание конституции проекта (PROJECT.md)
+
+Продолжить? (да/нет)`;
+}
+
 async function autoInitOnPluginLoad($: any, directory: string, client: any, worktree: string): Promise<boolean> {
   try {
     await logToFile($, directory, "autoInitOnPluginLoad: START");
