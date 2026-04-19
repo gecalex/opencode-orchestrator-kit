@@ -9,21 +9,13 @@ import { sessionHooks, saveContext } from "./session-hooks";
 import { blockingRules } from "./blocking-rules";
 import { gitWorkflow } from "./git-workflow";
 
-// Глобальные переменные для доступа в хуках
-let shellExecutor: any;
-let globalDirectory: string;
-
-export const OrchestratorKit: Plugin = async ({ 
-  project, 
-  client, 
-  $, 
-  directory, 
-  worktree 
+export const OrchestratorKit: Plugin = async ({
+  project,
+  client,
+  $,
+  directory,
+  worktree
 }) => {
-  // Сохраняем $ для использования в хуках
-  shellExecutor = $;
-  globalDirectory = directory;
-
   // Инициализация state machine при запуске плагина
   await stateMachine.initialize(directory);
 
@@ -48,24 +40,40 @@ export const OrchestratorKit: Plugin = async ({
   };
 
   // Pre-tool hook — выполняется перед каждым инструментом
+  let initialized = false;
+
   const toolExecuteBefore = async (input: any, output: any) => {
-    const currentState = stateMachine.getCurrentState();
+    // Инициализация при ПЕРВОМ вызове любого инструмента
+    if (!initialized) {
+      initialized = true;
+      const currentState = stateMachine.getCurrentState();
 
-    // Проверка: если state 1 (пустой) и нет .git — инициализируем
-    if (currentState === 1 && input.tool === "task") {
-      const hasGit = await shellExecutor.command`test -d ${globalDirectory}/.git && echo "yes"`.text();
-      if (hasGit.trim() !== "yes") {
-        // Инициализация через shell
-        await shellExecutor.command`git init && git checkout -b develop`.text();
-        await shellExecutor.command`echo -e "node_modules/\n.env\ndist/\n" > .gitignore`.text();
-        await shellExecutor.command`echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
-        await shellExecutor.command`git add -A && git commit -m "feat: initialize project"`.text();
+      // Если state 1 (пустой) и нет .git - инициализируем
+      if (currentState === 1) {
+        try {
+          const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+          if (hasGit.trim() !== "yes") {
+            // Инициализация через shell
+            await $.command`git init && git checkout -b develop`.text();
+            await $.command`echo -e "node_modules/\n.env\ndist/\n.DS_Store\n" > .gitignore`.text();
+            await $.command`echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
+            await $.command`git add -A && git commit -m "feat: initialize project"`.text();
 
-        // Обновляем state
-        stateMachine.setState(2, "Инициализация завершена");
-        await stateMachine.getState(shellExecutor, globalDirectory);
+            // Обновляем state
+            stateMachine.setState(2, "Инициализация завершена");
+            await stateMachine.getState($, directory);
+
+            await client.session.prompt({
+              body: "✅ Проект инициализирован! Git репозиторий создан, ветка develop активирована."
+            });
+          }
+        } catch (e) {
+          console.error("Ошибка инициализации:", e);
+        }
       }
     }
+
+    const currentState = stateMachine.getCurrentState();
 
     // Проверка: инструмент разрешён в текущем состоянии
     if (!stateMachine.isToolAllowed(input.tool, currentState)) {
