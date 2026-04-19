@@ -10,6 +10,7 @@ const LOGS_DIR = ".opencode/logs";
 const ERROR_LOG_FILE = `${LOGS_DIR}/errors.json`;
 const LOG_FILE = `${LOGS_DIR}/plugin.log`;
 const LOG_ENABLED = true; // Включить/выключить логирование
+const DEBUG_LOG_FILE = `${LOGS_DIR}/debug.json`;
 
 interface SessionContext {
   state: number;
@@ -27,16 +28,20 @@ interface SessionError {
 }
 
 // Логирование в файл (тихое)
-function logToFile(message: string, type: "info" | "error" = "info"): void {
-  if (!LOG_ENABLED) return;
+function logToFile(message: string, type: "info" | "debug" | "error" = "info"): void {
+  if (!LOG_ENABLED && type === "info") return;
   try {
     const logsDir = path.join(process.cwd(), LOGS_DIR);
     if (!fs.existsSync(logsDir)) {
       fs.mkdirSync(logsDir, { recursive: true });
     }
-    const logFilePath = path.join(process.cwd(), LOG_FILE);
+    const logFilePath = path.join(process.cwd(), type === "debug" ? DEBUG_LOG_FILE : LOG_FILE);
     const entry = `[${new Date().toISOString()}] [${type.toUpperCase()}] ${message}\n`;
-    fs.appendFileSync(logFilePath, entry);
+    if (type === "debug") {
+      fs.appendFileSync(logFilePath, JSON.stringify({ ts: new Date().toISOString(), msg: message }) + "\n");
+    } else {
+      fs.appendFileSync(logFilePath, entry);
+    }
   } catch {
     // Silent fail
   }
@@ -158,7 +163,7 @@ export async function onSessionCreated($: any, directory: string, client: any): 
   });
 
   // Автоматический вызов агента на основе state
-  console.log(`[SessionCreated] Вызов autoDelegateAgent для state=${projectState.code}`);
+  logToFile(`Вызов autoDelegateAgent для state=${projectState.code}`, "debug");
   await autoDelegateAgent($, client, projectState.code, directory);
 
   return { success: true, errors: [] };
@@ -166,7 +171,7 @@ export async function onSessionCreated($: any, directory: string, client: any): 
 
 // Автоматический вызов агента по state
 async function autoDelegateAgent($: any, client: any, state: number, directory: string): Promise<void> {
-  console.log(`[autoDelegateAgent] State: ${state}, directory: ${directory}`);
+  logToFile(`autoDelegateAgent: State=${state}, directory=${directory}`, "debug");
 
   const agentsByState: Record<number, { type: string; prompt: string }> = {
     0: {
@@ -188,7 +193,7 @@ async function autoDelegateAgent($: any, client: any, state: number, directory: 
   };
 
   const agentConfig = agentsByState[state];
-  console.log(`[autoDelegateAgent] agentConfig: ${JSON.stringify(agentConfig)}`);
+  logToFile(`agentConfig для state ${state}: ${JSON.stringify(agentConfig)}`, "debug");
 
   if (agentConfig) {
     await client.session.prompt({
