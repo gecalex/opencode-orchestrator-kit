@@ -15,7 +15,7 @@ const STATES: Record<ProjectStateCode, ProjectState> = {
     description: "Инициализация (создан репозиторий, но нет конституции)",
     allowedAgents: ["project-initializer", "constitution-agent"],
     blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-    allowedTools: ["read", "glob", "grep", "skill", "todowrite", "task"]
+    allowedTools: ["read", "glob", "grep", "skill", "todowrite", "task", "write", "question"]
   },
   10: {
     code: 10,

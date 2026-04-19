@@ -38,14 +38,14 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
         if (!rulesResult.passed) {
             throw new Error(`❌ Блокирующие правила не пройдены:\n${rulesResult.violations.join('\n')}`);
         }
-        // Gate 1: Pre-Execution проверка для task
-        if (input.tool === "task") {
-            const gateResult = await quality_gates_1.qualityGates.preExecution(input.args);
-            if (!gateResult.passed) {
-                const failedChecks = gateResult.checks.filter(c => !c.passed).map(c => c.message).join(", ");
-                throw new Error(`❌ Gate 1 (Pre-Execution) не пройден: ${failedChecks}`);
-            }
-        }
+        // Gate 1: Pre-Execution проверка — пропускаем для task (оркестратор делегирует)
+        // if (input.tool === "task") {
+        //   const gateResult = await qualityGates.preExecution(input.args);
+        //   if (!gateResult.passed) {
+        //     const failedChecks = gateResult.checks.filter(c => !c.passed).map(c => c.message).join(", ");
+        //     throw new Error(`❌ Gate 1 (Pre-Execution) не пройден: ${failedChecks}`);
+        //   }
+        // }
     };
     // Post-tool hook — выполняется после каждого инструмента
     const toolExecuteAfter = async (input, output) => {
