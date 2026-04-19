@@ -187,53 +187,55 @@ async function autoInitOnPluginLoad($, directory, client, worktree) {
         await logToFile($, directory, `autoInitOnPluginLoad: hasGit=${hasGitDir.trim()}`);
         const hasGit = hasGitDir.trim() === "yes";
         if (!hasGit) {
-            // Инициализация Git
-            await $.command `git init`.text();
-            await $.command `git checkout -b develop`.text();
-            // Создание базового .gitignore
-            await $.command `cat > .gitignore << 'EOF'
-node_modules/
-.env
-dist/
-.DS_Store
-*.log
-.tmp/
-.vscode/
-.idea/
-EOF`.text();
-            // Создание AGENTS.md из шаблона
-            await $.command `cat > ${directory}/AGENTS.md << 'EOF'${AGENTS_TEMPLATE}
-EOF`.text();
-            // Создание базового README
-            await $.command `cat > README.md << 'EOF'
-# Project
-
-Personal project created by Orchestrator Kit.
-
-## Getting Started
-
-Run \`opencode\` to start working on this project.
-EOF`.text();
-            // Первый коммит
-            await $.command `git add -A && git commit -m "feat: initialize project with Orchestrator Kit"`.text();
-            // Обновляем state
-            state_machine_1.stateMachine.setState(2, "Инициализация завершена");
+            // НЕ выполняем автоматическую инициализацию!
+            // Согласно философии QWEN - инициализация требует явного подтверждения
+            // Показываем пользователю инструкцию
             await client.session.prompt({
-                body: "✅ Проект инициализирован!\n- Git репозиторий создан\n- AGENTS.md создан\n- Ветка develop"
+                body: `⚠️ Проект не инициализирован!
+        
+Для инициализации проекта используйте:
+\`orchestrator-init\`
+
+Или вызовитеагента инициализации:
+task '{
+  "subagent_type": "orchestrator",
+  "prompt": "Инициализируй проект"
+}'
+
+После инициализации будет создан:
+- Git репозиторий с веткой develop
+- .gitignore
+- README.md
+- AGENTS.md (этот файл)
+
+Затем можно будет перейти к созданию конституции проекта.`
             });
-            return true;
+            await logToFile($, directory, "autoInitOnPluginLoad: NOT initialized - waiting for user confirmation");
+            return false; // Не инициализируем автоматически
         }
         // Проверка: есть AGENTS.md?
         const hasAgents = await $.command `test -f ${directory}/AGENTS.md && echo "yes"`.text();
         if (hasAgents.trim() !== "yes") {
-            // Создаём AGENTS.md из шаблона если его нет
+            // AGENTS.md не существует - копируем из шаблона
             await $.command `cat > ${directory}/AGENTS.md << 'EOF'${AGENTS_TEMPLATE}
 EOF`.text();
-            await client.session.prompt({
-                body: "✅ AGENTS.md создан в корне проекта!"
-            });
+            await logToFile($, directory, "autoInitOnPluginLoad: AGENTS.md created from template");
         }
-        return false;
+        // Показываем текущее состояние и следующие шаги
+        const currentState = state_machine_1.stateMachine.getCurrentState();
+        const stateDesc = getStateDescription(currentState);
+        const nextSteps = getNextSteps(currentState);
+        await client.session.prompt({
+            body: `✅ Orchestrator Kit загружен!
+
+Текущее состояние: ${currentState} (${stateDesc})
+
+Следующие шаги:
+${nextSteps.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+Для продолжения работы используйте команды оркестратора или вызовите соответствующего агента.`
+        });
+        return true;
     }
     catch (e) {
         await logToFile($, directory, `autoInitOnPluginLoad: ERROR=${e}`);
