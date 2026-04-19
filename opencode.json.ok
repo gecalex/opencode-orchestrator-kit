@@ -1,0 +1,101 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "file://.opencode/dist/index.js"
+  ],
+  "agent": {
+    "orchestrator": {
+      "description": "Главный оркестратор проекта",
+      "mode": "primary"
+    },
+    "planning-task-analyzer": {
+      "description": "Анализ и классификация задач, назначение агентов",
+      "mode": "subagent"
+    },
+    "tdd-coordinator": {
+      "description": "Координация TDD workflow по языкам",
+      "mode": "subagent"
+    },
+    "constitution-agent": {
+      "description": "Создание конституции проекта",
+      "mode": "subagent"
+    },
+    "specify-agent": {
+      "description": "Создание спецификаций модулей",
+      "mode": "subagent"
+    },
+    "plan-agent": {
+      "description": "Создание ОБЩЕГО плана проекта",
+      "mode": "subagent"
+    },
+    "tasks-agent": {
+      "description": "Разбивка плана на задачи",
+      "mode": "subagent"
+    },
+    "specification-analyst": {
+      "description": "Анализ противоречий и пробелов в спецификациях",
+      "mode": "subagent"
+    },
+    "project-initializer": {
+      "description": "Инициализация проекта",
+      "mode": "subagent"
+    },
+    "python-developer": {
+      "description": "Python backend разработка с TDD",
+      "mode": "subagent"
+    },
+    "go-developer": {
+      "description": "Go backend разработка с TDD",
+      "mode": "subagent"
+    },
+    "react-developer": {
+      "description": "React frontend разработка с TDD",
+      "mode": "subagent"
+    },
+    "python-specialist": {
+      "description": "Python тестирование (pytest, unittest)",
+      "mode": "subagent"
+    },
+    "go-specialist": {
+      "description": "Go тестирование (testing, testify)",
+      "mode": "subagent"
+    },
+    "ts-specialist": {
+      "description": "TypeScript/React тестирование (Jest, RTL)",
+      "mode": "subagent"
+    }
+  },
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/home/alex/MyProjects/opencode_orc_kit"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "searxng": {
+      "type": "remote",
+      "url": "http://localhost:8080/mcp",
+      "enabled": true
+    },
+    "sentry": {
+      "type": "remote",
+      "url": "https://mcp.sentry.dev/mcp",
+      "oauth": {},
+      "enabled": false
+    }
+  }
+} 

@@ -130,9 +130,36 @@ export async function onSessionCreated($: any, directory: string, client: any): 
   
   // Определение состояния проекта
   const projectState = await stateMachine.getState($, directory);
+
+  // Проверка: если нет git репозитория - вызвать project-initializer
+  const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+  if (hasGit.trim() !== "yes") {
+    await client.session.prompt({
+      body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+    });
+
+    // Вызов project-initializer
+    await $.task({
+      subagent_type: "project-initializer",
+      prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
+    });
+
+    // Повторное определение состояния после инициализации
+    const newState = await stateMachine.getState($, directory);
+
+    await client.session.prompt({
+      body: `✅ Pre-Flight пройден\n✅ Инициализация завершена\n\nСостояние проекта: ${newState.code} (${newState.description})\n\nРазрешённые агенты: ${newState.allowedAgents.join(", ")}`
+    });
+
+    return { success: true, errors: [] };
+  }
   
   await client.session.prompt({
-    body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})\n\nСостояние проекта: ${projectState.code} (${projectState.description})\n\nРазрешённые агенты: ${projectState.allowedAgents.join(", ")}`
+    body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
+
+Состояние проекта: ${projectState.code} (${projectState.description})
+
+Разрешённые агенты: ${projectState.allowedAgents.join(", ")}`
   });
   
   // Инициализация контекста
