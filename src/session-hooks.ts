@@ -120,12 +120,17 @@ export function logError(directory: string, error: Error, context?: any): void {
 
 // Обработчик session.created
 export async function onSessionCreated($: any, directory: string, client: any): Promise<{ success: boolean; errors: string[] }> {
+  try {
   logToFile("=== onSessionCreated START ===", "debug");
+
+  // Проверка git ДО ВСЕГО
+  logToFile("Проверка наличия .git...", "debug");
+  const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+  logToFile(`hasGit = "${hasGit.trim()}"`, "debug");
 
   const errors: string[] = [];
 
   // Проверка и инициализация git ДО Pre-Flight
-  const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
   if (hasGit.trim() !== "yes") {
     await client.session.prompt({
       body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
@@ -174,6 +179,10 @@ export async function onSessionCreated($: any, directory: string, client: any): 
 
   logToFile("=== onSessionCreated END ===", "debug");
   return { success: true, errors: [] };
+  } catch (e: any) {
+    logToFile(`ОШИБКА в onSessionCreated: ${e.message}`, "error");
+    return { success: false, errors: [e.message] };
+  }
 }
 
 // Автоматический вызов агента по state

@@ -142,50 +142,59 @@ function logError(directory, error, context) {
 }
 // Обработчик session.created
 async function onSessionCreated($, directory, client) {
-    logToFile("=== onSessionCreated START ===", "debug");
-    const errors = [];
-    // Проверка и инициализация git ДО Pre-Flight
-    const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
-    if (hasGit.trim() !== "yes") {
+    try {
+        logToFile("=== onSessionCreated START ===", "debug");
+        // Проверка git ДО ВСЕГО
+        logToFile("Проверка наличия .git...", "debug");
+        const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+        logToFile(`hasGit = "${hasGit.trim()}"`, "debug");
+        const errors = [];
+        // Проверка и инициализация git ДО Pre-Flight
+        if (hasGit.trim() !== "yes") {
+            await client.session.prompt({
+                body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+            });
+            await $.task({
+                subagent_type: "project-initializer",
+                prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
+            });
+        }
+        // Pre-Flight проверки ПОСЛЕ инициализации
+        logToFile("Запуск Pre-Flight...", "debug");
+        const preFlightResult = await pre_flight_1.preFlight.run($, directory);
+        logToFile(`Pre-Flight result: success=${preFlightResult.success}, passed=${preFlightResult.passed}`, "debug");
+        if (!preFlightResult.success) {
+            errors.push(...preFlightResult.errors);
+            await client.session.prompt({
+                body: `❌ Pre-Flight проверки не пройдены:\n${preFlightResult.errors.join("\n")}\n\nПроверьте готовность проекта перед началом работы.`
+            });
+            return { success: false, errors };
+        }
+        // Определение состояния проекта
+        logToFile("Определение состояния проекта...", "debug");
+        const projectState = await state_machine_1.stateMachine.getState($, directory);
+        logToFile(`State определен: ${projectState.code}`, "debug");
         await client.session.prompt({
-            body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
-        });
-        await $.task({
-            subagent_type: "project-initializer",
-            prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
-        });
-    }
-    // Pre-Flight проверки ПОСЛЕ инициализации
-    logToFile("Запуск Pre-Flight...", "debug");
-    const preFlightResult = await pre_flight_1.preFlight.run($, directory);
-    logToFile(`Pre-Flight result: success=${preFlightResult.success}, passed=${preFlightResult.passed}`, "debug");
-    if (!preFlightResult.success) {
-        errors.push(...preFlightResult.errors);
-        await client.session.prompt({
-            body: `❌ Pre-Flight проверки не пройдены:\n${preFlightResult.errors.join("\n")}\n\nПроверьте готовность проекта перед началом работы.`
-        });
-        return { success: false, errors };
-    }
-    // Определение состояния проекта
-    logToFile("Определение состояния проекта...", "debug");
-    const projectState = await state_machine_1.stateMachine.getState($, directory);
-    logToFile(`State определен: ${projectState.code}`, "debug");
-    await client.session.prompt({
-        body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
+            body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
 
 Состояние проекта: ${projectState.code} (${projectState.description})
 
 Разрешённые агенты: ${projectState.allowedAgents.join(", ")}`
-    });
-    // Инициализация контекста
-    await saveContext(directory, {
-        state: projectState.code
-    });
-    // Автоматический вызов агента на основе state
-    logToFile(`Вызов autoDelegateAgent для state=${projectState.code}`, "debug");
-    await autoDelegateAgent($, client, projectState.code, directory);
-    logToFile("=== onSessionCreated END ===", "debug");
-    return { success: true, errors: [] };
+        });
+        // Инициализация контекста
+        await saveContext(directory, {
+            state: projectState.code
+        });
+        // Автоматический вызов агента на основе state
+        logToFile(`Вызов autoDelegateAgent для state=${projectState.code}`, "debug");
+        await autoDelegateAgent($, client, projectState.code, directory);
+        logToFile("=== onSessionCreated END ===", "debug");
+        return { success: true, errors: [] };
+    }
+    catch (e) {
+        logToFile(`ОШИБКА в onSessionCreated: ${e.message}`, "error");
+        return { success: false, errors: [e.message] };
+    }
 }
 // Автоматический вызов агента по state
 async function autoDelegateAgent($, client, state, directory) {
