@@ -40,7 +40,7 @@ const violationLog: RuleViolation[] = [];
 async function checkStateValid(): Promise<boolean> {
   const { stateMachine } = await import("./state-machine");
   const state = stateMachine.getCurrentState();
-  return [0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(state);
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(state);
 }
 
 // Правило 5: Git workflow - проверка что мы в feature/bugfix/hotfix ветке (кроме состояния инициализации)
