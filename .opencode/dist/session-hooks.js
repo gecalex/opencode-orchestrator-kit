@@ -47,16 +47,35 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const state_machine_1 = require("./state-machine");
 const pre_flight_1 = require("./pre-flight");
-const CONTEXT_FILE = ".opencode/session-context.json";
-const ERROR_LOG_FILE = ".opencode/error-log.json";
+const LOGS_DIR = ".opencode/logs";
+const ERROR_LOG_FILE = `${LOGS_DIR}/errors.json`;
+const LOG_FILE = `${LOGS_DIR}/plugin.log`;
+const LOG_ENABLED = true; // Включить/выключить логирование
+// Логирование в файл (тихое)
+function logToFile(message, type = "info") {
+    if (!LOG_ENABLED)
+        return;
+    try {
+        const logsDir = path.join(process.cwd(), LOGS_DIR);
+        if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
+        }
+        const logFilePath = path.join(process.cwd(), LOG_FILE);
+        const entry = `[${new Date().toISOString()}] [${type.toUpperCase()}] ${message}\n`;
+        fs.appendFileSync(logFilePath, entry);
+    }
+    catch {
+        // Silent fail
+    }
+}
 // Сохранение контекста сессии
 async function saveContext(directory, context) {
     try {
-        const filePath = path.join(directory, CONTEXT_FILE);
-        const dir = path.dirname(filePath);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+        const opencodeDir = path.join(directory, ".opencode");
+        if (!fs.existsSync(opencodeDir)) {
+            fs.mkdirSync(opencodeDir, { recursive: true });
         }
+        const filePath = path.join(opencodeDir, "session-context.json");
         const existing = loadContext(directory);
         const merged = {
             state: state_machine_1.stateMachine.getCurrentState(),
@@ -66,36 +85,36 @@ async function saveContext(directory, context) {
             ...context
         };
         fs.writeFileSync(filePath, JSON.stringify(merged, null, 2));
-        console.log(`[SessionHooks] Context saved to ${filePath}`);
+        logToFile(`Context saved to ${filePath}`);
     }
     catch (e) {
-        console.error("[SessionHooks] Failed to save context:", e);
+        logToFile(`Failed to save context: ${e}`, "error");
     }
 }
 // Загрузка контекста сессии
 function loadContext(directory) {
     try {
-        const filePath = path.join(directory, CONTEXT_FILE);
+        const filePath = path.join(directory, ".opencode", "session-context.json");
         if (fs.existsSync(filePath)) {
             return JSON.parse(fs.readFileSync(filePath, "utf-8"));
         }
     }
-    catch (e) {
-        console.error("[SessionHooks] Failed to load context:", e);
+    catch {
+        // Silent fail
     }
     return null;
 }
 // Логирование ошибки сессии
 function logError(directory, error, context) {
     try {
-        const filePath = path.join(directory, ERROR_LOG_FILE);
-        const dir = path.dirname(filePath);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+        const logsDir = path.join(directory, LOGS_DIR);
+        if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
         }
+        const errorFilePath = path.join(directory, ERROR_LOG_FILE);
         let errors = [];
-        if (fs.existsSync(filePath)) {
-            errors = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        if (fs.existsSync(errorFilePath)) {
+            errors = JSON.parse(fs.readFileSync(errorFilePath, "utf-8"));
         }
         errors.push({
             error: error.message,
@@ -107,11 +126,11 @@ function logError(directory, error, context) {
         if (errors.length > 50) {
             errors = errors.slice(-50);
         }
-        fs.writeFileSync(filePath, JSON.stringify(errors, null, 2));
-        console.log(`[SessionHooks] Error logged: ${error.message}`);
+        fs.writeFileSync(errorFilePath, JSON.stringify(errors, null, 2));
+        logToFile(`Error logged: ${error.message}`, "error");
     }
-    catch (e) {
-        console.error("[SessionHooks] Failed to log error:", e);
+    catch {
+        // Silent fail
     }
 }
 // Обработчик session.created

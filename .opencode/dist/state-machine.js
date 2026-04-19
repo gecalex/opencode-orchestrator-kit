@@ -252,7 +252,9 @@ async function detectStateFromFS($, directory) {
 // Инициализация
 async function initialize(directory) {
     const saved = loadState(directory);
-    currentState = saved !== null ? saved : 10;
+    // Для нового проекта (нет state.json) — состояние 0
+    // Это позволяет использовать все инструменты для анализа и создания конституции
+    currentState = saved !== null ? saved : 0;
     saveState(currentState, directory);
     return STATES[currentState];
 }
@@ -263,12 +265,9 @@ async function getState($, directory) {
         currentState = saved;
         return STATES[currentState];
     }
+    // Пытаемся определить состояние по файловой системе
     const detected = await detectStateFromFS($, directory);
-    const fromState = currentState;
     currentState = detected;
-    if (fromState !== detected) {
-        logTransition(fromState, detected, "detected from filesystem");
-    }
     saveState(currentState, directory);
     return STATES[currentState];
 }
