@@ -44,9 +44,24 @@ exports.registerRule = registerRule;
 exports.getRules = getRules;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const LOGS_DIR = ".opencode/logs";
+const VIOLATION_LOG_FILE = ".opencode/logs/rule-violations.json";
+const LOG_FILE = ".opencode/logs/plugin.log";
+const LOG_ENABLED = false; // Только для отладки
+function logToFile(message) {
+    if (!LOG_ENABLED)
+        return;
+    try {
+        const logsDir = path.join(process.cwd(), LOGS_DIR);
+        if (!fs.existsSync(logsDir))
+            fs.mkdirSync(logsDir, { recursive: true });
+        const entry = `[${new Date().toISOString()}] ${message}\n`;
+        fs.appendFileSync(path.join(process.cwd(), LOG_FILE), entry);
+    }
+    catch { /* silent */ }
+}
 // Журнал нарушений
 const violationLog = [];
-const VIOLATION_LOG_FILE = ".opencode/rule-violations.json";
 // Правило 1: Аварийный тормоз - проверка состояния workflow
 async function checkStateValid() {
     const { stateMachine } = await Promise.resolve().then(() => __importStar(require("./state-machine")));
@@ -163,13 +178,16 @@ function logViolation(ruleId, details) {
     if (violationLog.length > 100) {
         violationLog.shift();
     }
-    console.log(`[BlockingRules] Violation: ${ruleId} - ${details}`);
+    logToFile(`Violation: ${ruleId} - ${details}`);
     // Сохраняем в файл
     try {
+        const logsDir = path.join(process.cwd(), LOGS_DIR);
+        if (!fs.existsSync(logsDir))
+            fs.mkdirSync(logsDir, { recursive: true });
         fs.writeFileSync(path.join(process.cwd(), VIOLATION_LOG_FILE), JSON.stringify(violationLog, null, 2));
     }
     catch (e) {
-        console.error("[BlockingRules] Failed to save log:", e);
+        logToFile(`Failed to save log: ${e}`);
     }
 }
 // Получить журнал нарушений
