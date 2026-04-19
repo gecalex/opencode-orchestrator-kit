@@ -156,7 +156,9 @@ async function onSessionCreated($, directory, client) {
         });
     }
     // Pre-Flight проверки ПОСЛЕ инициализации
+    logToFile("Запуск Pre-Flight...", "debug");
     const preFlightResult = await pre_flight_1.preFlight.run($, directory);
+    logToFile(`Pre-Flight result: success=${preFlightResult.success}, passed=${preFlightResult.passed}`, "debug");
     if (!preFlightResult.success) {
         errors.push(...preFlightResult.errors);
         await client.session.prompt({
@@ -165,7 +167,9 @@ async function onSessionCreated($, directory, client) {
         return { success: false, errors };
     }
     // Определение состояния проекта
+    logToFile("Определение состояния проекта...", "debug");
     const projectState = await state_machine_1.stateMachine.getState($, directory);
+    logToFile(`State определен: ${projectState.code}`, "debug");
     await client.session.prompt({
         body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
 

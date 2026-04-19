@@ -138,8 +138,10 @@ export async function onSessionCreated($: any, directory: string, client: any): 
   }
 
   // Pre-Flight проверки ПОСЛЕ инициализации
+  logToFile("Запуск Pre-Flight...", "debug");
   const preFlightResult = await preFlight.run($, directory);
-  
+  logToFile(`Pre-Flight result: success=${preFlightResult.success}, passed=${preFlightResult.passed}`, "debug");
+
   if (!preFlightResult.success) {
     errors.push(...preFlightResult.errors);
     await client.session.prompt({
@@ -149,7 +151,9 @@ export async function onSessionCreated($: any, directory: string, client: any): 
   }
   
   // Определение состояния проекта
+  logToFile("Определение состояния проекта...", "debug");
   const projectState = await stateMachine.getState($, directory);
+  logToFile(`State определен: ${projectState.code}`, "debug");
 
   await client.session.prompt({
     body: `✅ Pre-Flight проверки пройдены (${preFlightResult.passed}/${preFlightResult.passed + preFlightResult.failed})
