@@ -146,18 +146,35 @@ async function onSessionCreated($, directory, client) {
         logToFile("=== onSessionCreated START ===", "debug");
         // Проверка git ДО ВСЕГО
         logToFile("Проверка наличия .git...", "debug");
-        const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+        let hasGit = "no";
+        try {
+            hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+        }
+        catch (e) {
+            logToFile(`Ошибка проверки git: ${e.message}`, "error");
+        }
         logToFile(`hasGit = "${hasGit.trim()}"`, "debug");
         const errors = [];
         // Проверка и инициализация git ДО Pre-Flight
+        logToFile(`Проверка: hasGit="${hasGit.trim()}"`, "debug");
         if (hasGit.trim() !== "yes") {
-            await client.session.prompt({
-                body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
-            });
-            await $.task({
-                subagent_type: "project-initializer",
-                prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
-            });
+            logToFile("Запуск project-initializer...", "debug");
+            try {
+                await client.session.prompt({
+                    body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+                });
+                await $.task({
+                    subagent_type: "project-initializer",
+                    prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
+                });
+                logToFile("project-initializer завершен", "debug");
+            }
+            catch (e) {
+                logToFile(`Ошибка project-initializer: ${e.message}`, "error");
+            }
+        }
+        else {
+            logToFile("Git уже есть, пропускаем инициализацию", "debug");
         }
         // Pre-Flight проверки ПОСЛЕ инициализации
         logToFile("Запуск Pre-Flight...", "debug");

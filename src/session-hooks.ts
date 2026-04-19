@@ -125,21 +125,36 @@ export async function onSessionCreated($: any, directory: string, client: any): 
 
   // Проверка git ДО ВСЕГО
   logToFile("Проверка наличия .git...", "debug");
-  const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+  let hasGit = "no";
+  try {
+    hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+  } catch (e: any) {
+    logToFile(`Ошибка проверки git: ${e.message}`, "error");
+  }
   logToFile(`hasGit = "${hasGit.trim()}"`, "debug");
 
   const errors: string[] = [];
 
   // Проверка и инициализация git ДО Pre-Flight
-  if (hasGit.trim() !== "yes") {
-    await client.session.prompt({
-      body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
-    });
+  logToFile(`Проверка: hasGit="${hasGit.trim()}"`, "debug");
 
-    await $.task({
-      subagent_type: "project-initializer",
-      prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
-    });
+  if (hasGit.trim() !== "yes") {
+    logToFile("Запуск project-initializer...", "debug");
+    try {
+      await client.session.prompt({
+        body: `🔧 Git репозиторий не найден. Запускаю инициализацию проекта...`
+      });
+
+      await ($.task as any)({
+        subagent_type: "project-initializer",
+        prompt: `Инициализируй проект в директории ${directory}. Создай .gitignore, README.`
+      });
+      logToFile("project-initializer завершен", "debug");
+    } catch (e: any) {
+      logToFile(`Ошибка project-initializer: ${e.message}`, "error");
+    }
+  } else {
+    logToFile("Git уже есть, пропускаем инициализацию", "debug");
   }
 
   // Pre-Flight проверки ПОСЛЕ инициализации
