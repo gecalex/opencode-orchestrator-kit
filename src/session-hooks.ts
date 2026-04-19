@@ -120,6 +120,8 @@ export function logError(directory: string, error: Error, context?: any): void {
 
 // Обработчик session.created
 export async function onSessionCreated($: any, directory: string, client: any): Promise<{ success: boolean; errors: string[] }> {
+  logToFile("=== onSessionCreated START ===", "debug");
+
   const errors: string[] = [];
 
   // Проверка и инициализация git ДО Pre-Flight
@@ -162,16 +164,17 @@ export async function onSessionCreated($: any, directory: string, client: any): 
     state: projectState.code
   });
 
-  // Автоматический вызов агента на основе state
+// Автоматический вызов агента на основе state
   logToFile(`Вызов autoDelegateAgent для state=${projectState.code}`, "debug");
   await autoDelegateAgent($, client, projectState.code, directory);
 
+  logToFile("=== onSessionCreated END ===", "debug");
   return { success: true, errors: [] };
 }
 
 // Автоматический вызов агента по state
 async function autoDelegateAgent($: any, client: any, state: number, directory: string): Promise<void> {
-  logToFile(`autoDelegateAgent: State=${state}, directory=${directory}`, "debug");
+  logToFile(`=== autoDelegateAgent START: State=${state} ===`, "debug");
 
   const agentsByState: Record<number, { type: string; prompt: string }> = {
     0: {
@@ -200,10 +203,18 @@ async function autoDelegateAgent($: any, client: any, state: number, directory: 
       body: `🚀 Автоматический переход: state ${state} → вызываю ${agentConfig.type}...`
     });
 
-    await $.task({
-      subagent_type: agentConfig.type,
-      prompt: agentConfig.prompt
-    });
+    logToFile(`Вызов $.task с ${agentConfig.type}`, "debug");
+    try {
+      await ($.task as any)({
+        subagent_type: agentConfig.type,
+        prompt: agentConfig.prompt
+      });
+      logToFile(`$.task завершен для ${agentConfig.type}`, "debug");
+    } catch (e: any) {
+      logToFile(`Ошибка $.task: ${e.message}`, "error");
+    }
+  } else {
+    logToFile(`Нет agentConfig для state ${state}, пропускаем`, "debug");
   }
 }
 
