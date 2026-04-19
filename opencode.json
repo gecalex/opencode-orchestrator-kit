@@ -79,10 +79,7 @@
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_TOKEN"
-      },
-      "enabled": false
+      "enabled": true
     },
     "context7": {
       "type": "remote",
@@ -90,9 +87,9 @@
       "enabled": true
     },
     "searxng": {
-      "command": "docker",
-      "args": ["run", "-d", "--rm", "-p", "8080:8080", "-e", "SEARXNG_BASE_URL=http://localhost:8080/", "searxng/searxng"],
-      "enabled": false
+      "type": "remote",
+      "url": "http://localhost:8080/mcp",
+      "enabled": true
     },
     "sentry": {
       "type": "remote",
