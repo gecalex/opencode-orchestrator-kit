@@ -40,7 +40,7 @@ test -f .gitignore || echo "ERROR: .gitignore не найден"
 ### Шаг 4: Проверка конституции
 
 ```bash
-test -f .opencode/specify/memory/constitution.md || echo "ERROR: Конституция не найдена"
+test -f CONSTITUTION.md || echo "ERROR: Конституция не найдена"
 ```
 
 ### Шаг 5: Проверка агентов

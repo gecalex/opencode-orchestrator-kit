@@ -1,6 +1,6 @@
 ---
 name: analyze-state
-description: Анализ состояния проекта — определение кода состояния (10/20/30/40), проверка наличия кода, спецификаций, конституции.
+description: Анализ состояния проекта — определение кода состояния (1-10), проверка наличия кода, спецификаций, конституции.
 compatibility: opencode
 ---
 
@@ -18,38 +18,51 @@ compatibility: opencode
 
 | Код | Состояние | Описание |
 |-----|-----------|----------|
-| **10** | empty | Проект пустой, нет кода и спецификаций |
-| **20** | existing_code_no_specs | Есть код, но нет спецификаций |
-| **30** | partial_specification | Есть частичные спецификации |
-| **40** | full_specification | Все спецификации созданы, план готов |
+| **1** | empty | Проект пустой, нет ничего |
+| **2** | initialized | Проект инициализирован (есть .git) |
+| **3** | constitution | Конституция создана |
+| **4** | specifications | Спецификации созданы |
+| **5** | plan | План готов |
+| **6** | tasks | Задачи назначены |
+| **7** | testing | Тестовая фаза |
+| **8** | coding | Кодинговая фаза |
+| **9** | integration | Фаза интеграции |
+| **10** | release | Релиз-готов |
 
 ## Инструкции
 
-### Шаг 1: Проверка наличия кода
+### Шаг 1: Проверка наличия .git
 
 ```bash
-find . -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.go" -o -name "*.java" \) | head -1
+test -d .git && echo "yes"
 ```
 
-### Шаг 2: Проверка наличия спецификаций
+### Шаг 2: Проверка наличия конституции
 
 ```bash
-find .opencode -type f -name "spec.md" | head -1
+test -f CONSTITUTION.md && echo "yes"
 ```
 
-### Шаг 3: Проверка наличия конституции
+### Шаг 3: Проверка наличия спецификаций
 
 ```bash
-test -f .opencode/specify/memory/constitution.md && echo "yes"
+find specs -type f -name "*.md" 2>/dev/null | head -1
 ```
 
-### Шаг 4: Определение кода
+### Шаг 4: Проверка наличия плана
+
+```bash
+test -f PLAN.md && echo "yes"
+```
+
+### Шаг 5: Определение кода
 
 ```
-Нет кода + нет спецификаций → 10
-Есть код + нет спецификаций → 20  
-Есть спецификации + нет конституции → 30
-Есть конституция → 40
+Нет .git → 1 (пустой проект)
+Есть .git, нет CONSTITUTION → 2 (инициализирован)
+Есть CONSTITUTION → 3 (конституция)
+Есть specs → 4 (спецификации)
+Есть PLAN → 5 (план)
 ```
 
 ## Результат
@@ -57,10 +70,10 @@ test -f .opencode/specify/memory/constitution.md && echo "yes"
 Возвращает код состояния и описание:
 
 ```
-Состояние проекта: 40 (full_specification)
+Состояние проекта: 3 (constitution)
 
-Разрешённые агенты: plan-agent, tasks-agent, planning-task-analyzer
-Запрещённые агенты: constitution-agent, specify-agent
+Разрешённые агенты: project-initializer, constitution-agent, specify-agent
+Запрещённые агенты: plan-agent, tasks-agent, python-developer
 ```
 
 ## Использование
