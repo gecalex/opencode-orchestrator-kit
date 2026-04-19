@@ -28,6 +28,16 @@ async function detectLanguages($: any, directory: string): Promise<string[]> {
 
 // Gate 1: Pre-Execution — проверка корректности задачи
 export async function preExecution(taskInput: any): Promise<QualityGateResult> {
+  // Для task инструмента - разрешаем без строгой проверки
+  // Оркестратор должен делегировать, Gate 2 проверит результат
+  if (taskInput?.subagent_type || taskInput?.prompt || taskInput?.description) {
+    return {
+      passed: true,
+      gate: 1,
+      checks: [{ name: "Task input", passed: true, message: "OK" }]
+    };
+  }
+  
   const checks: CheckResult[] = [
     {
       name: "Задача определена",
