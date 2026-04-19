@@ -7,8 +7,119 @@ const state_machine_1 = require("./state-machine");
 const quality_gates_1 = require("./quality-gates");
 const session_hooks_1 = require("./session-hooks");
 const blocking_rules_1 = require("./blocking-rules");
-// Функция авто-инициализации при загрузке плагина (через config hook)
-async function autoInitOnPluginLoad($, directory, client) {
+// AGENTS.md template content - will be copied to project on init
+const AGENTS_TEMPLATE = `# AGENTS.md — Orchestrator Kit
+
+> **ВАЖНО:** Все ответы, документация и отчёты на РУССКОМ ЯЗЫКЕ.
+
+---
+
+## 🚫 Блокирующие правила
+
+### Аварийный тормоз
+- Проверка текущего состояния workflow
+- Наличие подтверждения пользователя на критических переходах
+- Pre-condition проверки для текущей фазы
+
+### Правило пре-условий
+- Аналитики: доступность исходных данных
+- Кодеры: наличие написанных тестов (TDD First!)
+- Рецензенты: наличие артефакта для рецензирования
+
+---
+
+## 🚀 Быстрый старт
+
+\`\`\`bash
+# 1. Анализ состояния
+opencode analyze-state
+
+# 2. Планирование
+opencode plan-implementation --feature "feature-name"
+
+# 3. Задачи
+opencode break-down-tasks --feature "feature-name"
+
+# 4. TDD: тесты → код
+opencode create-test --task-id TASK-001
+opencode write-code --task-id TASK-001
+\`\`\`
+
+---
+
+## 📊 Машина состояний
+
+| Код | Состояние |
+|-----|----------|
+| 1 | Пустой проект |
+| 2 | Инициализирован (есть .git) |
+| 3 | Конституция создана (PROJECT.md) |
+| 4 | Спецификации готовы (SPEC/) |
+| 5 | План реализации готов |
+| 6 | Задачи назначены |
+| 7 | Тестовая фаза |
+| 8 | Кодинговая фаза |
+| 9 | Фаза интеграции |
+| 10 | Релиз-готов |
+
+---
+
+## 📋 Pre-condition чек-листы
+
+### Перед анализом
+- [ ] Git инициализирован
+- [ ] Нет незакоммиченных изменений
+
+### Перед написанием кода
+- [ ] Тесты написаны (RED)
+- [ ] Покрытие ≥ 80%
+- [ ] Подтверждение на переход TEST → CODE
+
+### Перед мержем в develop
+- [ ] Все тесты проходят (GREEN)
+- [ ] Quality gates пройдены
+- [ ] Код рецензирован
+
+---
+
+## 🔄 TDD Workflow
+
+1. **TEST**: Написать тесты (должны упасть - RED)
+2. **CODE**: Написать код (тесты проходят - GREEN)
+3. **REFACTOR**: Рефакторинг
+
+---
+
+## 🛠️ Quality Gates
+
+| Gate | Проверка |
+|------|----------|
+| 1 | Pre-Execution (синтаксис) |
+| 2 | Post-Execution (покрытие ≥80%) |
+| 3 | Pre-Commit (безопасность) |
+| 4 | Pre-Merge (интеграция) |
+| 5 | Pre-Implementation (требования) |
+
+---
+
+## 📁 Структура проекта
+
+\`\`\`
+project/
+├── AGENTS.md          # Этот файл
+├── PROJECT.md         # Конституция
+├── SPEC/              # Спецификации модулей
+├── TASKS.md           # Задачи
+├── REPORTS/           # Отчёты
+└── src/               # Исходный код
+\`\`\`
+
+---
+
+_Created by Orchestrator Kit_
+`;
+// Функция авто-инициализации при загрузке плагина
+async function autoInitOnPluginLoad($, directory, client, worktree) {
     try {
         // Проверка: есть .git?
         const hasGitDir = await $.command `test -d ${directory}/.git && echo "yes"`.text();
@@ -28,6 +139,9 @@ dist/
 .vscode/
 .idea/
 EOF`.text();
+            // Создание AGENTS.md из шаблона
+            await $.command `cat > ${directory}/AGENTS.md << 'EOF'${AGENTS_TEMPLATE}
+EOF`.text();
             // Создание базового README
             await $.command `cat > README.md << 'EOF'
 # Project
@@ -42,13 +156,20 @@ EOF`.text();
             await $.command `git add -A && git commit -m "feat: initialize project with Orchestrator Kit"`.text();
             // Обновляем state
             state_machine_1.stateMachine.setState(2, "Инициализация завершена");
+            await client.session.prompt({
+                body: "✅ Проект инициализирован!\n- Git репозиторий создан\n- AGENTS.md создан\n- Ветка develop"
+            });
             return true;
         }
-        // Проверка: есть AGENTS.md (или QWEN.md)?
+        // Проверка: есть AGENTS.md?
         const hasAgents = await $.command `test -f ${directory}/AGENTS.md && echo "yes"`.text();
-        const hasQwen = await $.command `test -f ${directory}/QWEN.md && echo "yes"`.text();
-        if (hasAgents.trim() !== "yes" && hasQwen.trim() !== "yes") {
-            console.log("[OrchestratorKit] AGENTS.md не найден в проекте. Рекомендуется использовать /init для инициализации.");
+        if (hasAgents.trim() !== "yes") {
+            // Создаём AGENTS.md из шаблона если его нет
+            await $.command `cat > ${directory}/AGENTS.md << 'EOF'${AGENTS_TEMPLATE}
+EOF`.text();
+            await client.session.prompt({
+                body: "✅ AGENTS.md создан в корне проекта!"
+            });
         }
         return false;
     }
@@ -62,7 +183,7 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
     await state_machine_1.stateMachine.initialize(directory);
     // Выполняем авто-инициализацию при загрузке плагина
     // Это обходит баг с tool.execute.before для subagent
-    const wasInitialized = await autoInitOnPluginLoad($, directory, client);
+    const wasInitialized = await autoInitOnPluginLoad($, directory, client, worktree);
     if (wasInitialized) {
         await client.session.prompt({
             body: "✅ Проект инициализирован! Git репозиторий создан, ветка develop активирована.\n\nТеперь можно работать с оркестратором."
