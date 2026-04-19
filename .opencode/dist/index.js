@@ -121,8 +121,10 @@ _Created by Orchestrator Kit_
 // Функция авто-инициализации при загрузке плагина
 async function autoInitOnPluginLoad($, directory, client, worktree) {
     try {
+        console.log("[OrchestratorKit] autoInitOnPluginLoad started, directory:", directory);
         // Проверка: есть .git?
         const hasGitDir = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+        console.log("[OrchestratorKit] hasGit check:", hasGitDir.trim());
         const hasGit = hasGitDir.trim() === "yes";
         if (!hasGit) {
             // Инициализация Git
@@ -174,7 +176,8 @@ EOF`.text();
         return false;
     }
     catch (e) {
-        console.error("[OrchestratorKit] Ошибка инициализации:", e);
+        console.error("[OrchestratorKit] CRITICAL Ошибка инициализации:", e);
+        // Try again on next call as fallback
         return false;
     }
 }
