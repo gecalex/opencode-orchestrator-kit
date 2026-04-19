@@ -13,16 +13,16 @@ const STATES: Record<ProjectStateCode, ProjectState> = {
   0: {
     code: 0,
     description: "Инициализация (создан репозиторий, но нет конституции)",
-    allowedAgents: ["project-initializer"],
-    blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "constitution-agent", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-    allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
+    allowedAgents: ["project-initializer", "constitution-agent"],
+    blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
+    allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit"]
   },
   10: {
     code: 10,
     description: "Конституция создана (основные требования и ограничения)",
     allowedAgents: ["project-initializer", "constitution-agent"],
     blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-    allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
+    allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit"]
   },
   20: {
     code: 20,

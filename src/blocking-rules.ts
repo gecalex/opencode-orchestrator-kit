@@ -67,6 +67,17 @@ const checkGitWorkflow = async (): Promise<boolean> => {
 // Правило 2: Пре-условия для аналитиков
 async function checkAnalystPreconditions(): Promise<boolean> {
   // Аналитики должны иметь доступ к спецификациям
+  // Но для состояний 0 и 10 (нет конституции/спецификаций) - это нормально
+  const { stateMachine } = await import("./state-machine");
+  const state = stateMachine.getCurrentState();
+  
+  // Для состояний 0 и 10 проверка спецификаций не требуется
+  // Оркестратор может анализировать проект и создавать конституцию/спецификации
+  if (state === 0 || state === 10) {
+    return true;
+  }
+  
+  // Для остальных состояний требуются спецификации
   return fs.existsSync(path.join(process.cwd(), "SPEC"));
 }
 

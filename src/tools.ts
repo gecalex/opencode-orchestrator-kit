@@ -232,6 +232,123 @@ export async function mcpList(): Promise<ToolResult> {
   }
 }
 
+// Карта ключевых слов к MCP
+const KEYWORD_MCP_MAP: Record<string, string[]> = {
+  // Базы данных
+  postgres: ["postgres"],
+  postgresql: ["postgres"],
+  sqlite: ["sqlite"],
+  supabase: ["supabase"],
+  neo4j: ["neo4j", "memory"],
+  mysql: ["mysql"],
+  mongodb: ["mongodb"],
+  
+  // Поиск
+  поиск: ["searxng"],
+  search: ["searxng"],
+  документация: ["context7"],
+  docs: ["context7"],
+  
+  // Файлы/Git
+  файлы: ["filesystem"],
+  files: ["filesystem"],
+  git: ["git"],
+  github: ["github"],
+  версионирование: ["git"],
+  
+  // Браузер
+  браузер: ["playwright"],
+  browser: ["playwright"],
+  automation: ["playwright"],
+  "ui тест": ["playwright"],
+  "e2e": ["playwright"],
+  
+  // DevOps
+  aws: ["aws"],
+  amazon: ["aws"],
+  kubernetes: ["kubernetes"],
+  k8s: ["kubernetes"],
+  sentry: ["sentry"],
+  мониторинг: ["sentry"],
+  ошибки: ["sentry"],
+  docker: ["docker"],
+  
+  // Память
+  память: ["kratos"],
+  memory: ["memory"],
+  context: ["kratos", "memory"],
+  rag: ["archon"],
+  knowledge: ["archon"],
+  документы: ["archon"],
+  graph: ["memory", "neo4j"],
+  
+  // Коммуникация
+  slack: ["slack"],
+  чат: ["slack"],
+  уведомление: ["slack"],
+  email: ["email"],
+  почта: ["email"]
+};
+
+// Инструмент: mcp-analyze — анализ ТЗ и подбор MCP серверов
+export async function mcpAnalyze(args: {
+  spec?: string;
+  keywords?: string[];
+}): Promise<ToolResult> {
+  try {
+    const { mcpRegistry } = await import("./mcp-registry");
+    
+    const text = args.spec || "";
+    const keywords = args.keywords || [];
+    
+    // Добавляем все слова из spec в нижнем регистре
+    const allWords = [...keywords, ...text.toLowerCase().split(/\s+/)];
+    
+    const foundMCPs = new Set<string>();
+    const matchedKeywords: string[] = [];
+    
+    // Ищем совпадения
+    for (const word of allWords) {
+      const mcpList = KEYWORD_MCP_MAP[word];
+      if (mcpList) {
+        mcpList.forEach(m => foundMCPs.add(m));
+        matchedKeywords.push(word);
+      }
+    }
+    
+    // Обязательные MCP
+    const required = ["filesystem", "git"];
+    
+    // Получаем информацию о найденных MCP
+    const mcpDetails = Array.from(foundMCPs).map(id => {
+      const server = mcpRegistry.getById(id);
+      return server ? {
+        id: server.id,
+        name: server.name,
+        category: server.category,
+        description: server.description
+      } : null;
+    }).filter(Boolean);
+    
+    return {
+      success: true,
+      result: {
+        required,
+        recommended: Array.from(foundMCPs),
+        details: mcpDetails,
+        matchedKeywords: [...new Set(matchedKeywords)]
+      },
+      message: `Найдено ${foundMCPs.size} MCP серверов по ключевым словам: ${matchedKeywords.join(", ")}`
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: String(e),
+      message: `Ошибка анализа: ${e}`
+    };
+  }
+}
+
 // Registry инструментов
 export const toolsRegistry = {
   "speckit-analyze-state": analyzeState,
@@ -239,7 +356,8 @@ export const toolsRegistry = {
   "speckit-quality-gate-run": qualityGateRun,
   "speckit-task-delegator": taskDelegator,
   "speckit-mcp-search": mcpSearch,
-  "speckit-mcp-list": mcpList
+  "speckit-mcp-list": mcpList,
+  "speckit-mcp-analyze": mcpAnalyze
 };
 
 export default toolsRegistry;
