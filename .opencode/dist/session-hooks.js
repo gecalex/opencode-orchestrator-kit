@@ -170,11 +170,13 @@ async function onSessionCreated($, directory, client) {
         state: projectState.code
     });
     // Автоматический вызов агента на основе state
+    console.log(`[SessionCreated] Вызов autoDelegateAgent для state=${projectState.code}`);
     await autoDelegateAgent($, client, projectState.code, directory);
     return { success: true, errors: [] };
 }
 // Автоматический вызов агента по state
 async function autoDelegateAgent($, client, state, directory) {
+    console.log(`[autoDelegateAgent] State: ${state}, directory: ${directory}`);
     const agentsByState = {
         0: {
             type: "constitution-agent",
@@ -194,6 +196,7 @@ async function autoDelegateAgent($, client, state, directory) {
         }
     };
     const agentConfig = agentsByState[state];
+    console.log(`[autoDelegateAgent] agentConfig: ${JSON.stringify(agentConfig)}`);
     if (agentConfig) {
         await client.session.prompt({
             body: `🚀 Автоматический переход: state ${state} → вызываю ${agentConfig.type}...`
