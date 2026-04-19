@@ -7,7 +7,13 @@ const state_machine_1 = require("./state-machine");
 const quality_gates_1 = require("./quality-gates");
 const session_hooks_1 = require("./session-hooks");
 const blocking_rules_1 = require("./blocking-rules");
+// Глобальные переменные для доступа в хуках
+let shellExecutor;
+let globalDirectory;
 const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
+    // Сохраняем $ для использования в хуках
+    shellExecutor = $;
+    globalDirectory = directory;
     // Инициализация state machine при запуске плагина
     await state_machine_1.stateMachine.initialize(directory);
     // Обработчик событий (делегируем в session-hooks.ts)
@@ -31,16 +37,16 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
         const currentState = state_machine_1.stateMachine.getCurrentState();
         // Проверка: если state 1 (пустой) и нет .git — инициализируем
         if (currentState === 1 && input.tool === "task") {
-            const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+            const hasGit = await shellExecutor.command `test -d ${globalDirectory}/.git && echo "yes"`.text();
             if (hasGit.trim() !== "yes") {
-                // Инициализация через shell (не через agent — хуки не работают для subagent)
-                await $.command `git init && git checkout -b develop`.text();
-                await $.command `echo -e "node_modules/\n.env\ndist/\n" > .gitignore`.text();
-                await $.command `echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
-                await $.command `git add -A && git commit -m "feat: initialize project"`.text();
+                // Инициализация через shell
+                await shellExecutor.command `git init && git checkout -b develop`.text();
+                await shellExecutor.command `echo -e "node_modules/\n.env\ndist/\n" > .gitignore`.text();
+                await shellExecutor.command `echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
+                await shellExecutor.command `git add -A && git commit -m "feat: initialize project"`.text();
                 // Обновляем state
                 state_machine_1.stateMachine.setState(2, "Инициализация завершена");
-                await state_machine_1.stateMachine.getState($, directory);
+                await state_machine_1.stateMachine.getState(shellExecutor, globalDirectory);
             }
         }
         // Проверка: инструмент разрешён в текущем состоянии
