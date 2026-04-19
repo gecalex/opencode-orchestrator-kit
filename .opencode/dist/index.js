@@ -209,8 +209,34 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
         }
     };
     // Pre-tool hook — выполняется перед каждым инструментом
+    let initRetryAttempted = false;
     const toolExecuteBefore = async (input, output) => {
-        // Инициализация теперь через autoInitOnPluginLoad при загрузке плагина
+        console.log("[OrchestratorKit] toolExecuteBefore:", input.tool, "state:", state_machine_1.stateMachine.getCurrentState());
+        // Fallback: если autoInit не сработал - пробуем тут
+        if (!initRetryAttempted) {
+            initRetryAttempted = true;
+            const currentState = state_machine_1.stateMachine.getCurrentState();
+            if (currentState === 1) {
+                console.log("[OrchestratorKit] Retry init in toolExecuteBefore...");
+                try {
+                    const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+                    if (hasGit.trim() !== "yes") {
+                        await $.command `git init && git checkout -b develop`.text();
+                        await $.command `cat > .gitignore << 'EOF'
+node_modules/
+.env
+dist/
+.DS_Store
+EOF`.text();
+                        state_machine_1.stateMachine.setState(2, "Инициализация выполнена");
+                        console.log("[OrchestratorKit] RETRY init SUCCESS");
+                    }
+                }
+                catch (e) {
+                    console.error("[OrchestratorKit] Retry init failed:", e);
+                }
+            }
+        }
         const currentState = state_machine_1.stateMachine.getCurrentState();
         // Проверка: инструмент разрешён в текущем состоянии
         if (!state_machine_1.stateMachine.isToolAllowed(input.tool, currentState)) {
