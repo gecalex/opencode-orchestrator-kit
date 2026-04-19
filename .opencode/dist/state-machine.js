@@ -57,21 +57,21 @@ const STATES = {
         description: "Инициализация (создан репозиторий, но нет конституции)",
         allowedAgents: ["project-initializer", "constitution-agent"],
         blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit"]
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit", "task"]
     },
     10: {
         code: 10,
         description: "Конституция создана (основные требования и ограничения)",
         allowedAgents: ["project-initializer", "constitution-agent"],
         blockedAgents: ["speckit-specify", "speckit-plan", "speckit-tasks", "plan-agent", "tasks-agent", "planning-task-analyzer", "specification-analyst", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit"]
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "filesystem_directory_tree", "filesystem_list_directory", "filesystem_read_file", "filesystem_create_file", "filesystem_edit_file", "bash", "grep", "read", "write", "edit", "task"]
     },
     20: {
         code: 20,
         description: "Спецификации модулей созданы (детальное описание компонентов)",
         allowedAgents: ["project-initializer", "constitution-agent", "specify-agent", "specification-analyst"],
         blockedAgents: ["plan-agent", "tasks-agent", "planning-task-analyzer", "work_*", "python-developer", "go-developer", "react-developer", "python-specialist", "go-specialist", "ts-specialist", "devops", "security"],
-        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite"]
+        allowedTools: ["run_shell_command", "read_file", "write_file", "glob", "grep_search", "edit", "skill", "todowrite", "task"]
     },
     30: {
         code: 30,
