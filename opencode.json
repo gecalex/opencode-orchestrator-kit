@@ -89,13 +89,20 @@
     "searxng": {
       "type": "remote",
       "url": "http://localhost:3002/mcp",
-      "enabled": true
+      "enabled": false
     },
     "sentry": {
       "type": "remote",
       "url": "https://mcp.sentry.dev/mcp",
       "oauth": {},
       "enabled": false
+    }
+  },
+  "lsp": {
+    "typescript-language-server": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx"],
+      "priority": 10
     }
   }
 } 
