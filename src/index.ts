@@ -43,11 +43,27 @@ export const OrchestratorKit: Plugin = async ({
   const toolExecuteBefore = async (input: any, output: any) => {
     const currentState = stateMachine.getCurrentState();
 
+    // Проверка: если state 1 (пустой) и нет .git — инициализируем
+    if (currentState === 1 && input.tool === "task") {
+      const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
+      if (hasGit.trim() !== "yes") {
+        // Инициализация через shell (не через agent — хуки не работают для subagent)
+        await $.command`git init && git checkout -b develop`.text();
+        await $.command`echo -e "node_modules/\n.env\ndist/\n" > .gitignore`.text();
+        await $.command`echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
+        await $.command`git add -A && git commit -m "feat: initialize project"`.text();
+
+        // Обновляем state
+        stateMachine.setState(2, "Инициализация завершена");
+        await stateMachine.getState($, directory);
+      }
+    }
+
     // Проверка: инструмент разрешён в текущем состоянии
     if (!stateMachine.isToolAllowed(input.tool, currentState)) {
       throw new Error(`❌ Инструмент "${input.tool}" запрещён в состоянии ${currentState} (${stateMachine.getStateDescription(currentState)}).`);
     }
-    
+
     // Блокирующие правила проверка
     const rulesResult = await blockingRules.checkAllRules();
     if (!rulesResult.passed) {

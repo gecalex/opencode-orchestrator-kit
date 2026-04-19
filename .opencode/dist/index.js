@@ -29,6 +29,20 @@ const OrchestratorKit = async ({ project, client, $, directory, worktree }) => {
     // Pre-tool hook — выполняется перед каждым инструментом
     const toolExecuteBefore = async (input, output) => {
         const currentState = state_machine_1.stateMachine.getCurrentState();
+        // Проверка: если state 1 (пустой) и нет .git — инициализируем
+        if (currentState === 1 && input.tool === "task") {
+            const hasGit = await $.command `test -d ${directory}/.git && echo "yes"`.text();
+            if (hasGit.trim() !== "yes") {
+                // Инициализация через shell (не через agent — хуки не работают для subagent)
+                await $.command `git init && git checkout -b develop`.text();
+                await $.command `echo -e "node_modules/\n.env\ndist/\n" > .gitignore`.text();
+                await $.command `echo "# PKB\n\nPersonal Knowledge Base" > README.md`.text();
+                await $.command `git add -A && git commit -m "feat: initialize project"`.text();
+                // Обновляем state
+                state_machine_1.stateMachine.setState(2, "Инициализация завершена");
+                await state_machine_1.stateMachine.getState($, directory);
+            }
+        }
         // Проверка: инструмент разрешён в текущем состоянии
         if (!state_machine_1.stateMachine.isToolAllowed(input.tool, currentState)) {
             throw new Error(`❌ Инструмент "${input.tool}" запрещён в состоянии ${currentState} (${state_machine_1.stateMachine.getStateDescription(currentState)}).`);
