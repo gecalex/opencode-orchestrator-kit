@@ -122,13 +122,20 @@ _Created by Orchestrator Kit_
 `;
 
 // Функция авто-инициализации при загрузке плагина
+// Функция логирования в файл
+async function logToFile($: any, directory: string, message: string) {
+  const logFile = `${directory}/.opencode/orchestrator.log`;
+  const timestamp = new Date().toISOString();
+  await $.command`echo "${timestamp} | ${message}" >> ${logFile} 2>/dev/null || true`.text();
+}
+
 async function autoInitOnPluginLoad($: any, directory: string, client: any, worktree: string): Promise<boolean> {
   try {
-    console.log("[OrchestratorKit] autoInitOnPluginLoad started, directory:", directory);
+    await logToFile($, directory, "autoInitOnPluginLoad: START");
     
     // Проверка: есть .git?
     const hasGitDir = await $.command`test -d ${directory}/.git && echo "yes"`.text();
-    console.log("[OrchestratorKit] hasGit check:", hasGitDir.trim());
+    await logToFile($, directory, `autoInitOnPluginLoad: hasGit=${hasGitDir.trim()}`);
     const hasGit = hasGitDir.trim() === "yes";
     
     if (!hasGit) {
@@ -191,8 +198,7 @@ EOF`.text();
     
     return false;
   } catch (e) {
-    console.error("[OrchestratorKit] CRITICAL Ошибка инициализации:", e);
-    // Try again on next call as fallback
+    await logToFile($, directory, `autoInitOnPluginLoad: ERROR=${e}`);
     return false;
   }
 }
@@ -241,14 +247,14 @@ export const OrchestratorKit: Plugin = async ({
   let initRetryAttempted = false;
   
   const toolExecuteBefore = async (input: any, output: any) => {
-    console.log("[OrchestratorKit] toolExecuteBefore:", input.tool, "state:", stateMachine.getCurrentState());
+    await logToFile($, directory, `toolExecuteBefore: tool=${input.tool}, state=${stateMachine.getCurrentState()}`);
     
     // Fallback: если autoInit не сработал - пробуем тут
     if (!initRetryAttempted) {
       initRetryAttempted = true;
       const currentState = stateMachine.getCurrentState();
       if (currentState === 1) {
-        console.log("[OrchestratorKit] Retry init in toolExecuteBefore...");
+        await logToFile($, directory, "toolExecuteBefore: RETRY init...");
         try {
           const hasGit = await $.command`test -d ${directory}/.git && echo "yes"`.text();
           if (hasGit.trim() !== "yes") {
@@ -260,10 +266,10 @@ dist/
 .DS_Store
 EOF`.text();
             stateMachine.setState(2, "Инициализация выполнена");
-            console.log("[OrchestratorKit] RETRY init SUCCESS");
+            await logToFile($, directory, "toolExecuteBefore: RETRY init SUCCESS");
           }
         } catch (e) {
-          console.error("[OrchestratorKit] Retry init failed:", e);
+          await logToFile($, directory, `toolExecuteBefore: RETRY init ERROR=${e}`);
         }
       }
     }
