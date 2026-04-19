@@ -266,11 +266,14 @@ async function detectStateFromFS($, directory) {
     }
 }
 // Инициализация
-async function initialize(directory) {
+async function initialize(directory, $) {
+    // Проверяем .git - если нет, возвращаем state 1 (пустой проект)
+    // Инициализация будет вызвана позже через toolExecuteBefore
     const saved = loadState(directory);
     // Для нового проекта (нет state.json) — состояние 1 (пустой проект)
     currentState = saved !== null ? saved : 1;
     saveState(currentState, directory);
+    console.log(`[StateMachine] initialize: state=${currentState}, directory=${directory}`);
     return STATES[currentState];
 }
 // Получение состояния

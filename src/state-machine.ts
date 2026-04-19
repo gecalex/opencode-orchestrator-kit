@@ -239,11 +239,16 @@ async function detectStateFromFS($: any, directory: string): Promise<ProjectStat
 }
 
 // Инициализация
-export async function initialize(directory: string): Promise<ProjectState> {
+export async function initialize(directory: string, $?: any): Promise<ProjectState> {
+  // Проверяем .git - если нет, возвращаем state 1 (пустой проект)
+  // Инициализация будет вызвана позже через toolExecuteBefore
   const saved = loadState(directory);
+
   // Для нового проекта (нет state.json) — состояние 1 (пустой проект)
   currentState = saved !== null ? saved : 1;
   saveState(currentState, directory);
+
+  console.log(`[StateMachine] initialize: state=${currentState}, directory=${directory}`);
   return STATES[currentState];
 }
 
