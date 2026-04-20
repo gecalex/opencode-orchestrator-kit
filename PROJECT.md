@@ -322,16 +322,16 @@ orchestrator-kit/
 
 | Код | Состояние | Разрешённые агенты | Следующий переход |
 |-----|----------|------------------|------------------|
-| 0 | Пустой проект | init-project | → 1 |
-| 1 | Инициализирован | constitution-agent | → 2 |
-| 2 | Конституция | specify-agent | → 3 |
-| 3 | Спецификации | plan-agent | → 4 |
-| 4 | План готов | task-agent | → 5 |
-| 5 | Задачи разбиты | test-developer | → 6 |
-| 6 | Тестовая фаза | python/typescript-developer | → 7 |
-| 7 | Кодинговая фаза | code-reviewer | → 8 |
-| 8 | Интеграция | integration-tester | → 9 |
-| 9 | Релиз-готов | meta-agent | → 10 (release) |
+| 0 | Пустой проект | init-project, mcp-manager, documentation-writer, git-agent | → 1 |
+| 1 | Инициализирован | constitution-agent, mcp-manager, documentation-writer, git-agent | → 2 |
+| 2 | Конституция | specify-agent, mcp-manager, documentation-writer, git-agent | → 3 |
+| 3 | Спецификации | plan-agent, mcp-manager, documentation-writer, git-agent | → 4 |
+| 4 | План готов | task-agent, mcp-manager, documentation-writer, git-agent | → 5 |
+| 5 | Задачи разбиты | test-developer, mcp-manager, documentation-writer, git-agent | → 6 |
+| 6 | Тестовая фаза | python/typescript-developer, mcp-manager, documentation-writer, git-agent | → 7 |
+| 7 | Кодинговая фаза | code-reviewer, mcp-manager, documentation-writer, git-agent | → 8 |
+| 8 | Интеграция | integration-tester, security-auditor, mcp-manager, documentation-writer, git-agent | → 9 |
+| 9 | Релиз-готов | meta-agent, mcp-manager, documentation-writer, git-agent | (финальное состояние) |
 
 ### 6.2 Правила переходов
 
