@@ -94,4 +94,34 @@ describe('State Machine - Real Tests', () => {
       expect(stateMachine.tryTransition).toBeDefined();
     });
   });
+
+  describe('initialize()', () => {
+    it('должен быть async функцией', () => {
+      expect(stateMachine.initialize.constructor.name).toBe('AsyncFunction');
+    });
+  });
+
+  describe('getState()', () => {
+    it('должен быть async функцией', () => {
+      expect(stateMachine.getState.constructor.name).toBe('AsyncFunction');
+    });
+  });
+
+  describe('setState()', () => {
+    it('должен быть функцией', () => {
+      expect(typeof stateMachine.setState).toBe('function');
+    });
+  });
+
+  describe('updateAfterTask()', () => {
+    it('должен быть async функцией', () => {
+      expect(stateMachine.updateAfterTask.constructor.name).toBe('AsyncFunction');
+    });
+  });
+
+  describe('tryTransition()', () => {
+    it('должен быть функцией', () => {
+      expect(typeof stateMachine.tryTransition).toBe('function');
+    });
+  });
 });
