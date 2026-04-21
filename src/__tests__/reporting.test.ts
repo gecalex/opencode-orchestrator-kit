@@ -54,6 +54,76 @@ describe('Reporting Module', () => {
       expect(report.timestamp >= before).toBe(true);
       expect(report.timestamp <= after).toBe(true);
     });
+
+    it('должен принимать все параметры', () => {
+      const report = generateReport(
+        'T-004',
+        'go-developer',
+        'Complete report',
+        ['file1.go', 'file2.go'],
+        { success: true, details: 'OK' },
+        ['Minor issue'],
+        ['log.txt']
+      );
+
+      expect(report.taskId).toBe('T-004');
+      expect(report.agentType).toBe('go-developer');
+      expect(report.summary).toBe('Complete report');
+      expect(report.changes).toHaveLength(2);
+      expect(report.results.success).toBe(true);
+      expect(report.issues).toHaveLength(1);
+      expect(report.attachments).toHaveLength(1);
+    });
+  });
+
+  describe('saveReport()', () => {
+    it('должен быть функцией', () => {
+      expect(saveReport).toBeDefined();
+      expect(typeof saveReport).toBe('function');
+    });
+  });
+
+  describe('getProgressDashboard()', () => {
+    it('должен быть функцией', () => {
+      expect(getProgressDashboard).toBeDefined();
+      expect(typeof getProgressDashboard).toBe('function');
+    });
+
+    it('должен принимать directory', () => {
+      expect(() => getProgressDashboard('/nonexistent/path')).not.toThrow();
+    });
+
+    it('должен возвращать null для несуществующего пути', () => {
+      const result = getProgressDashboard('/nonexistent/path/xyz123');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('updateProgress()', () => {
+    it('должен быть функцией', () => {
+      expect(updateProgress).toBeDefined();
+      expect(typeof updateProgress).toBe('function');
+    });
+
+    it('должен принимать параметры', () => {
+      expect(() => updateProgress('/test', 5, ['T-001'], ['T-002'])).not.toThrow();
+    });
+  });
+
+  describe('getReports()', () => {
+    it('должен быть функцией', () => {
+      expect(getReports).toBeDefined();
+      expect(typeof getReports).toBe('function');
+    });
+
+    it('должен принимать directory', () => {
+      expect(() => getReports('/nonexistent')).not.toThrow();
+    });
+
+    it('должен возвращать массив', () => {
+      const result = getReports('/nonexistent');
+      expect(Array.isArray(result)).toBe(true);
+    });
   });
 
   describe('notifyPhaseComplete()', () => {
@@ -74,6 +144,11 @@ describe('Reporting Module', () => {
       const message = notifyPhaseComplete(3, 'test');
 
       expect(message).toContain('🎉');
+    });
+
+    it('должен содержать следующее действие', () => {
+      const message = notifyPhaseComplete(7, 'Run tests');
+      expect(message).toContain('Run tests');
     });
   });
 
@@ -120,34 +195,6 @@ describe('Reporting Module', () => {
     it('должен использовать правильные функции', () => {
       const report = reporting.generateReport('T-001', 'agent', 'sum', [], { success: true, details: 'ok' });
       expect(report.taskId).toBe('T-001');
-    });
-  });
-
-  describe('saveReport function', () => {
-    it('должен быть функцией', () => {
-      expect(saveReport).toBeDefined();
-      expect(typeof saveReport).toBe('function');
-    });
-  });
-
-  describe('getProgressDashboard function', () => {
-    it('должен быть функцией', () => {
-      expect(getProgressDashboard).toBeDefined();
-      expect(typeof getProgressDashboard).toBe('function');
-    });
-  });
-
-  describe('updateProgress function', () => {
-    it('должен быть функцией', () => {
-      expect(updateProgress).toBeDefined();
-      expect(typeof updateProgress).toBe('function');
-    });
-  });
-
-  describe('getReports function', () => {
-    it('должен быть функцией', () => {
-      expect(getReports).toBeDefined();
-      expect(typeof getReports).toBe('function');
     });
   });
 });
