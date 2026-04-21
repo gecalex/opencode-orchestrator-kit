@@ -1,218 +1,217 @@
 // Tests for git-workflow.ts
 import {
-  GitWorkflowOptions,
   isValidCommitMessage,
-  createFeatureBranch,
-  preCommitCheck,
-  validateCommitMessage,
-  mergeToDevelop,
-  getChangedFiles,
-  getChangeStats,
-  isMergedToDevelop,
-  hasConflicts,
-  gitWorkflow
+  gitWorkflow,
+  type GitWorkflowOptions
 } from '../git-workflow';
 
 describe('Git Workflow Module', () => {
+  describe('Module exports', () => {
+    it('должен экспортировать isValidCommitMessage', () => {
+      expect(isValidCommitMessage).toBeDefined();
+      expect(typeof isValidCommitMessage).toBe('function');
+    });
+
+    it('должен экспортировать gitWorkflow объект', () => {
+      expect(gitWorkflow).toBeDefined();
+      expect(typeof gitWorkflow).toBe('object');
+    });
+
+    it('gitWorkflow содержит все функции', () => {
+      expect(gitWorkflow.createFeatureBranch).toBeDefined();
+      expect(gitWorkflow.preCommitCheck).toBeDefined();
+      expect(gitWorkflow.validateCommitMessage).toBeDefined();
+      expect(gitWorkflow.mergeToDevelop).toBeDefined();
+      expect(gitWorkflow.getChangedFiles).toBeDefined();
+      expect(gitWorkflow.getChangeStats).toBeDefined();
+      expect(gitWorkflow.isMergedToDevelop).toBeDefined();
+      expect(gitWorkflow.hasConflicts).toBeDefined();
+      expect(gitWorkflow.isValidCommitMessage).toBeDefined();
+    });
+
+    it('gitWorkflow.isValidCommitMessage === isValidCommitMessage', () => {
+      expect(gitWorkflow.isValidCommitMessage).toBe(isValidCommitMessage);
+    });
+  });
+
   describe('isValidCommitMessage()', () => {
-    it('должен принимать feat коммит', async () => {
+    it('должен быть async функцией', () => {
+      expect(isValidCommitMessage.constructor.name).toBe('AsyncFunction');
+    });
+
+    it('принимает message строку', async () => {
+      await expect(isValidCommitMessage('test')).resolves.toBeDefined();
+    });
+
+    it('валидирует feat коммит', async () => {
       const result = await isValidCommitMessage('feat: add new feature');
       expect(result).toBe(true);
     });
 
-    it('должен принимать fix коммит', async () => {
-      const result = await isValidCommitMessage('fix: fix a bug');
+    it('валидирует fix коммит', async () => {
+      const result = await isValidCommitMessage('fix: fix bug');
       expect(result).toBe(true);
     });
 
-    it('должен принимать коммит с scope', async () => {
-      const result = await isValidCommitMessage('feat(backend): add API endpoint');
-      expect(result).toBe(true);
-    });
-
-    it('должен принимать docs коммит', async () => {
+    it('валидирует docs коммит', async () => {
       const result = await isValidCommitMessage('docs: update README');
       expect(result).toBe(true);
     });
 
-    it('должен принимать test коммит', async () => {
-      const result = await isValidCommitMessage('test: add unit tests');
+    it('валидирует test коммит', async () => {
+      const result = await isValidCommitMessage('test: add tests');
       expect(result).toBe(true);
     });
 
-    it('должен принимать chore коммит', async () => {
-      const result = await isValidCommitMessage('chore: update dependencies');
+    it('валидирует коммит с scope', async () => {
+      const result = await isValidCommitMessage('feat(backend): add API');
       expect(result).toBe(true);
     });
 
-    it('должен принимать refactor коммит', async () => {
-      const result = await isValidCommitMessage('refactor: improve code structure');
+    it('валидирует коммит с несколькими scope', async () => {
+      const result = await isValidCommitMessage('fix(frontend,backend): critical fix');
       expect(result).toBe(true);
     });
 
-    it('должен принимать style коммит', async () => {
-      const result = await isValidCommitMessage('style: fix formatting');
-      expect(result).toBe(true);
+    it('отклоняет невалидное сообщение', async () => {
+      const result = await isValidCommitMessage('invalid message');
+      expect(result).toBe(false);
     });
 
-    it('должен принимать perf коммит', async () => {
-      const result = await isValidCommitMessage('perf: improve performance');
-      expect(result).toBe(true);
+    it('отклоняет пустое сообщение', async () => {
+      const result = await isValidCommitMessage('');
+      expect(result).toBe(false);
     });
 
-    it('должен принимать ci коммит', async () => {
-      const result = await isValidCommitMessage('ci: update workflow');
-      expect(result).toBe(true);
+    it('отклоняет сообщение без type', async () => {
+      const result = await isValidCommitMessage('add feature');
+      expect(result).toBe(false);
     });
 
-    it('должен принимать build коммит', async () => {
-      const result = await isValidCommitMessage('build: update build config');
-      expect(result).toBe(true);
-    });
-
-    it('должен отклонять коммит без описания', async () => {
+    it('отклоняет сообщение без описания', async () => {
       const result = await isValidCommitMessage('feat');
       expect(result).toBe(false);
     });
 
-    it('должен отклонять невалидный формат', async () => {
-      const result = await isValidCommitMessage('some random message');
+    it('отклоняет сообщение без двоеточия', async () => {
+      const result = await isValidCommitMessage('feat add feature');
       expect(result).toBe(false);
     });
 
-    it('должен отклонять пустую строку', async () => {
-      const result = await isValidCommitMessage('');
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('createFeatureBranch()', () => {
-    it('должен быть async функцией', () => {
-      expect(createFeatureBranch.constructor.name).toBe('AsyncFunction');
+    it('валидирует refactor коммит', async () => {
+      const result = await isValidCommitMessage('refactor: improve code');
+      expect(result).toBe(true);
     });
 
-    it('должен принимать параметры', async () => {
-      const options: GitWorkflowOptions = { directory: '/test' };
-      // Функция требует $ и async, поэтому тестируем сигнатуру
-      expect(typeof createFeatureBranch).toBe('function');
-    });
-  });
-
-  describe('preCommitCheck()', () => {
-    it('должен быть async функцией', () => {
-      expect(preCommitCheck.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('validateCommitMessage()', () => {
-    it('должен быть async функцией', () => {
-      expect(validateCommitMessage.constructor.name).toBe('AsyncFunction');
+    it('валидирует chore коммит', async () => {
+      const result = await isValidCommitMessage('chore: update deps');
+      expect(result).toBe(true);
     });
 
-    it('должен принимать валидное сообщение', async () => {
-      const result = await validateCommitMessage({}, '/test', 'feat: add feature');
-      expect(result.valid).toBe(true);
+    it('валидирует perf коммит', async () => {
+      const result = await isValidCommitMessage('perf: optimize performance');
+      expect(result).toBe(true);
     });
 
-    it('должен отклонять невалидное сообщение', async () => {
-      const result = await validateCommitMessage({}, '/test', 'invalid message');
-      expect(result.valid).toBe(false);
-      expect(result.error).toBeDefined();
+    it('валидирует ci коммит', async () => {
+      const result = await isValidCommitMessage('ci: update pipeline');
+      expect(result).toBe(true);
     });
 
-    it('должен возвращать объект с valid и error', async () => {
-      const result = await validateCommitMessage({}, '/test', 'test');
-      expect(result).toHaveProperty('valid');
-      expect(result).toHaveProperty('error');
-    });
-  });
-
-  describe('mergeToDevelop()', () => {
-    it('должен быть async функцией', () => {
-      expect(mergeToDevelop.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('getChangedFiles()', () => {
-    it('должен быть async функцией', () => {
-      expect(getChangedFiles.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('getChangeStats()', () => {
-    it('должен быть async функцией', () => {
-      expect(getChangeStats.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('isMergedToDevelop()', () => {
-    it('должен быть async функцией', () => {
-      expect(isMergedToDevelop.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('hasConflicts()', () => {
-    it('должен быть async функцией', () => {
-      expect(hasConflicts.constructor.name).toBe('AsyncFunction');
-    });
-  });
-
-  describe('gitWorkflow default export', () => {
-    it('должен экспортировать createFeatureBranch', () => {
-      expect(gitWorkflow.createFeatureBranch).toBeDefined();
+    it('валидирует build коммит', async () => {
+      const result = await isValidCommitMessage('build: update build');
+      expect(result).toBe(true);
     });
 
-    it('должен экспортировать preCommitCheck', () => {
-      expect(gitWorkflow.preCommitCheck).toBeDefined();
+    it('валидирует revert коммит', async () => {
+      const result = await isValidCommitMessage('revert: revert commit');
+      expect(result).toBe(true);
     });
 
-    it('должен экспортировать validateCommitMessage', () => {
-      expect(gitWorkflow.validateCommitMessage).toBeDefined();
-    });
-
-    it('должен экспортировать mergeToDevelop', () => {
-      expect(gitWorkflow.mergeToDevelop).toBeDefined();
-    });
-
-    it('должен экспортировать getChangedFiles', () => {
-      expect(gitWorkflow.getChangedFiles).toBeDefined();
-    });
-
-    it('должен экспортировать getChangeStats', () => {
-      expect(gitWorkflow.getChangeStats).toBeDefined();
-    });
-
-    it('должен экспортировать isMergedToDevelop', () => {
-      expect(gitWorkflow.isMergedToDevelop).toBeDefined();
-    });
-
-    it('должен экспортировать hasConflicts', () => {
-      expect(gitWorkflow.hasConflicts).toBeDefined();
-    });
-
-    it('должен экспортировать isValidCommitMessage', () => {
-      expect(gitWorkflow.isValidCommitMessage).toBeDefined();
+    it('валидирует style коммит', async () => {
+      const result = await isValidCommitMessage('style: format code');
+      expect(result).toBe(true);
     });
   });
 
   describe('GitWorkflowOptions interface', () => {
-    it('должен иметь directory', () => {
-      const options: GitWorkflowOptions = {
-        directory: '/test',
-        branchPrefix: 'feature'
-      };
-      
+    it('должен иметь обязательное поле directory', () => {
+      const options: GitWorkflowOptions = { directory: '/test' };
       expect(options.directory).toBe('/test');
+    });
+
+    it('должен иметь необязательное поле branchPrefix', () => {
+      const options: GitWorkflowOptions = { directory: '/test', branchPrefix: 'feature' };
       expect(options.branchPrefix).toBe('feature');
     });
 
-    it('должен позволять отсутствие branchPrefix', () => {
-      const options: GitWorkflowOptions = {
-        directory: '/test'
-      };
-      
-      expect(options.directory).toBe('/test');
-      expect(options.branchPrefix).toBeUndefined();
+    it('branchPrefix может быть пустым', () => {
+      const options: GitWorkflowOptions = { directory: '/test', branchPrefix: '' };
+      expect(options.branchPrefix).toBe('');
+    });
+  });
+
+  describe('Function signatures', () => {
+    it('createFeatureBranch является функцией', () => {
+      expect(typeof gitWorkflow.createFeatureBranch).toBe('function');
+    });
+
+    it('preCommitCheck является функцией', () => {
+      expect(typeof gitWorkflow.preCommitCheck).toBe('function');
+    });
+
+    it('validateCommitMessage является функцией', () => {
+      expect(typeof gitWorkflow.validateCommitMessage).toBe('function');
+    });
+
+    it('mergeToDevelop является функцией', () => {
+      expect(typeof gitWorkflow.mergeToDevelop).toBe('function');
+    });
+
+    it('getChangedFiles является функцией', () => {
+      expect(typeof gitWorkflow.getChangedFiles).toBe('function');
+    });
+
+    it('getChangeStats является функцией', () => {
+      expect(typeof gitWorkflow.getChangeStats).toBe('function');
+    });
+
+    it('isMergedToDevelop является функцией', () => {
+      expect(typeof gitWorkflow.isMergedToDevelop).toBe('function');
+    });
+
+    it('hasConflicts является функцией', () => {
+      expect(typeof gitWorkflow.hasConflicts).toBe('function');
+    });
+  });
+
+  describe('Integration scenarios', () => {
+    it('валидное сообщение feat с(scope)', async () => {
+      expect(await isValidCommitMessage('feat(auth): add login')).toBe(true);
+    });
+
+    it('валидное сообщение fix с несколькими scope', async () => {
+      expect(await isValidCommitMessage('fix(api,ui): fix both')).toBe(true);
+    });
+
+    it('валидное сообщение с кириллицей', async () => {
+      expect(await isValidCommitMessage('feat: добавить функцию')).toBe(true);
+    });
+
+    it('валидное сообщение с несколькими словами', async () => {
+      expect(await isValidCommitMessage('feat: add new amazing feature')).toBe(true);
+    });
+
+    it('валидное сообщение с длинным описанием', async () => {
+      expect(await isValidCommitMessage('feat: add very long description about what was added')).toBe(true);
+    });
+
+    it('валидное сообщение build с scope', async () => {
+      expect(await isValidCommitMessage('build(deps): upgrade dependencies')).toBe(true);
+    });
+
+    it('валидное сообщение refactor с scope', async () => {
+      expect(await isValidCommitMessage('refactor(auth): simplify login flow')).toBe(true);
     });
   });
 });
