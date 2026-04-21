@@ -142,4 +142,28 @@ describe('Quality Gates Module', () => {
       });
     });
   });
+
+  describe('preCommit()', () => {
+    it('должен быть async функцией', () => {
+      expect(preCommit.constructor.name).toBe('AsyncFunction');
+    });
+  });
+
+  describe('mcpCheck()', () => {
+    it('должен быть async функцией', () => {
+      expect(mcpCheck.constructor.name).toBe('AsyncFunction');
+    });
+
+    it('должен принимать $ и directory', async () => {
+      const result = await mcpCheck({}, '/nonexistent');
+      expect(result).toHaveProperty('passed');
+      expect(result).toHaveProperty('gate');
+      expect(result.gate).toBe(6);
+    });
+
+    it('должен возвращать checks массив', async () => {
+      const result = await mcpCheck({}, '/test');
+      expect(Array.isArray(result.checks)).toBe(true);
+    });
+  });
 });
