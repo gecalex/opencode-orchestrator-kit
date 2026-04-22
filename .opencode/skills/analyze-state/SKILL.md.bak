@@ -60,9 +60,9 @@ test -f PLAN.md && echo "yes"
 ```
 Нет .git → 1 (пустой проект)
 Есть .git, нет CONSTITUTION → 2 (инициализирован)
-Есть CONSTITUTION, нет specs → 3 (constitution)
-Есть CONSTITUTION, есть specs, нет PLAN → 4 (спецификации)
-Есть CONSTITUTION, есть specs, есть PLAN → 5 (план)
+Есть CONSTITUTION → 3 (конституция)
+Есть specs → 4 (спецификации)
+Есть PLAN → 5 (план)
 ```
 
 ## Результат
@@ -70,10 +70,10 @@ test -f PLAN.md && echo "yes"
 Возвращает код состояния и описание:
 
 ```
-Состояние проекта: 4 (specifications)
+Состояние проекта: 3 (constitution)
 
-Разрешённые агенты: project-initializer, constitution-agent, specify-agent, plan-agent
-Запрещённые агенты: tasks-agent, python-developer
+Разрешённые агенты: project-initializer, constitution-agent, specify-agent
+Запрещённые агенты: plan-agent, tasks-agent, python-developer
 ```
 
 ## Использование

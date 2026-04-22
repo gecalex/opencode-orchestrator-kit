@@ -46,7 +46,7 @@ test -f CONSTITUTION.md || echo "ERROR: Конституция не найден
 ### Шаг 5: Проверка агентов
 
 ```bash
-find .opencode/agents -name "*.md" | wc -l
+ls .opencode/agents/*.md | wc -l
 ```
 
 ### Шаг 6: Проверка скиллов
