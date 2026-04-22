@@ -59,6 +59,12 @@ test -f PLAN.md && echo "yes"
 
 ```
 Нет .git → 1 (пустой проект)
+Есть .git, нет CONSTITUTION.md → 2 (инициализирован)
+Есть .git, есть CONSTITUTION.md, нет specs/ → 3 (constitution)
+Есть .git, есть CONSTITUTION.md, есть specs/, нет PLAN.md → 4 (specifications)
+Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md → 5 (plan)
+```
+Нет .git → 1 (пустой проект)
 Есть .git, нет CONSTITUTION → 2 (инициализирован)
 Есть CONSTITUTION, нет specs → 3 (constitution)
 Есть CONSTITUTION, есть specs, нет PLAN → 4 (спецификации)
