@@ -5,9 +5,7 @@ compatibility: opencode
 ---
 
 ## When to Use
-
 Используй этот скилл:
-
 - ✅ При старте сессии
 - ✅ Перед началом любой фазы
 - ✅ Для определения текущего состояния проекта
@@ -55,20 +53,21 @@ find specs -type f -name "*.md" 2>/dev/null | head -1
 test -f PLAN.md && echo "yes"
 ```
 
-### Шаг 5: Определение кода
+### Шаг 5: Проверка наличия задач
+
+```bash
+test -f TASKS.md && echo "yes"
+```
+
+### Шаг 6: Определение кода
 
 ```
 Нет .git → 1 (пустой проект)
 Есть .git, нет CONSTITUTION.md → 2 (инициализирован)
 Есть .git, есть CONSTITUTION.md, нет specs/ → 3 (constitution)
 Есть .git, есть CONSTITUTION.md, есть specs/, нет PLAN.md → 4 (specifications)
-Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md → 5 (plan)
-```
-Нет .git → 1 (пустой проект)
-Есть .git, нет CONSTITUTION → 2 (инициализирован)
-Есть CONSTITUTION, нет specs → 3 (constitution)
-Есть CONSTITUTION, есть specs, нет PLAN → 4 (спецификации)
-Есть CONSTITUTION, есть specs, есть PLAN → 5 (план)
+Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md, нет TASKS.md → 5 (plan)
+Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md, есть TASKS.md → 6 (tasks)
 ```
 
 ## Результат
@@ -76,10 +75,10 @@ test -f PLAN.md && echo "yes"
 Возвращает код состояния и описание:
 
 ```
-Состояние проекта: 4 (specifications)
+Состояние проекта: 6 (tasks)
 
-Разрешённые агенты: project-initializer, constitution-agent, specify-agent, plan-agent
-Запрещённые агенты: tasks-agent, python-developer
+Разрешённые агенты: project-initializer, constitution-agent, specify-agent, plan-agent, task-agent
+Запрещённые агенты: python-developer
 ```
 
 ## Использование
