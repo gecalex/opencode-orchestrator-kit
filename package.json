@@ -1,6 +1,6 @@
 {
   "name": "opencode-orchestrator-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Плагин оркестрации разработки на основе Speckit/TDD методологии",
   "main": "src/index.ts",
   "devDependencies": {
