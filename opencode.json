@@ -20,16 +20,32 @@
       "description": "Создание конституции проекта",
       "mode": "subagent"
     },
+    "speckit-constitution": {
+      "description": "Создание конституции проекта (Speckit)",
+      "mode": "subagent"
+    },
     "specify-agent": {
       "description": "Создание спецификаций модулей",
+      "mode": "subagent"
+    },
+    "speckit-specify": {
+      "description": "Создание спецификаций модулей (Speckit)",
       "mode": "subagent"
     },
     "plan-agent": {
       "description": "Создание ОБЩЕГО плана проекта",
       "mode": "subagent"
     },
+    "speckit-plan": {
+      "description": "Создание плана реализации (Speckit)",
+      "mode": "subagent"
+    },
     "tasks-agent": {
       "description": "Разбивка плана на задачи",
+      "mode": "subagent"
+    },
+    "speckit-tasks": {
+      "description": "Разбивка на задачи (Speckit)",
       "mode": "subagent"
     },
     "specification-analyst": {
@@ -63,6 +79,14 @@
     "ts-specialist": {
       "description": "TypeScript/React тестирование (Jest, RTL)",
       "mode": "subagent"
+    },
+    "code-reviewer": {
+      "description": "Code review агент",
+      "mode": "subagent"
+    },
+    "security-auditor": {
+      "description": "Security audit агент",
+      "mode": "subagent"
     }
   },
   "mcp": {
@@ -85,24 +109,6 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "enabled": true
-    },
-    "searxng": {
-      "type": "remote",
-      "url": "http://localhost:3002/mcp",
-      "enabled": false
-    },
-    "sentry": {
-      "type": "remote",
-      "url": "https://mcp.sentry.dev/mcp",
-      "oauth": {},
-      "enabled": false
-    }
-  },
-  "lsp": {
-    "typescript-language-server": {
-      "command": ["typescript-language-server", "--stdio"],
-      "extensions": [".ts", ".tsx"],
-      "priority": 10
     }
   }
-} 
+}

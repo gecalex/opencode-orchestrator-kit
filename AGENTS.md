@@ -16,7 +16,7 @@
 | Python тесты | `python-specialist` | `task subagent_type: "python-specialist"` |
 | Go тесты | `go-specialist` | `task subagent_type: "go-specialist"` |
 | TS/React тесты | `ts-specialist` | `task subagent_type: "ts-specialist"` |
-| Code review | `code-reviewer` | `task subparameter_name: "code-reviewer"` |
+| Code review | `code-reviewer` | `task subagent_type: "code-reviewer"` |
 | Security audit | `security-auditor` | `task subagent_type: "security-auditor"` |
 
 **ЗАПРЕЩЕНО делать код самому, если есть специализированный агент!**
