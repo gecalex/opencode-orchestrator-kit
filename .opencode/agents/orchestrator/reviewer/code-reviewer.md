@@ -2,6 +2,7 @@
 description: Code review agent - рецензирование кода
 mode: subagent
 tools:
+  task: true
   read: true
   glob: true
   grep: true

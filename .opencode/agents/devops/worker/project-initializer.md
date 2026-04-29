@@ -2,6 +2,7 @@
 description: Инициализация проекта — проверка расширения, Git, .gitignore, Pre-Flight
 mode: subagent
 tools:
+  task: true
   write: true
   edit: true
   bash: true

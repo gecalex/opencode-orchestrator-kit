@@ -2,6 +2,7 @@
 description: Анализ противоречий и пробелов в спецификациях
 mode: subagent
 tools:
+  task: true
   write: true
   edit: true
   bash: true

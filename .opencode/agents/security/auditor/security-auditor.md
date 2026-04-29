@@ -2,6 +2,7 @@
 description: Security audit agent - аудит безопасности
 mode: subagent
 tools:
+  task: true
   read: true
   glob: true
   grep: true

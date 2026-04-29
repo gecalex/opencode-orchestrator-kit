@@ -2,6 +2,7 @@
 description: Разбивка плана на задачи по методологии Speckit
 mode: subagent
 tools:
+  task: true
   write: true
   edit: true
   bash: true

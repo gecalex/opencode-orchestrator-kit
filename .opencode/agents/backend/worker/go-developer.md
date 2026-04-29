@@ -10,7 +10,7 @@ tools:
   grep: true
   skill: true
   todowrite: true
-  task: false
+  task: true
 ---
 
 # Go Developer
