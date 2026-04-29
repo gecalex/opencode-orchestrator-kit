@@ -308,6 +308,24 @@ EOF`.text();
         if (!rulesResult.passed) {
             throw new Error(`❌ Блокирующие правила не пройдены:\n${rulesResult.violations.join('\n')}`);
         }
+        // Pre-commit валидация ПЕРЕД git commit
+        if (input.tool === "bash" && input.args?.command?.includes("git commit")) {
+            const gateResult = await quality_gates_1.qualityGates.preCommit($, directory);
+            if (!gateResult.passed) {
+                throw new Error(`❌ Pre-Commit проверка не пройдена: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}\n\nКоммит заблокирован. Исправьте ошибки и попробуйте снова.`);
+            }
+        }
+        // Pre-Merge валидация ПЕРЕД git merge в develop
+        if (input.tool === "bash" && input.args?.command?.includes("git merge") && input.args.command.includes("develop")) {
+            const gateResult = await quality_gates_1.qualityGates.preMerge($, directory);
+            if (!gateResult.passed) {
+                throw new Error(`❌ Pre-Merge проверка не пройдена: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}\n\nМерж заблокирован.`);
+            }
+            // Запрашиваем подтверждение пользователя
+            await client.session.prompt({
+                body: `⚠️ Вы собираетесь выполнить мерж в develop.\n\nПодтвердите мерж (да/нет):`
+            });
+        }
         // Gate 1: Pre-Execution проверка — пропускаем для task (оркестратор делегирует)
         // if (input.tool === "task") {
         //   const gateResult = await qualityGates.preExecution(input.args);
@@ -330,33 +348,6 @@ EOF`.text();
             }
             // Обновление состояния после выполнения задачи
             await state_machine_1.stateMachine.updateAfterTask(output, directory, $);
-        }
-        // Pre-commit валидация при git commit
-        if (input.tool === "bash" && input.args?.command?.includes("git commit")) {
-            const gateResult = await quality_gates_1.qualityGates.preCommit($, directory);
-            if (!gateResult.passed) {
-                await client.session.prompt({
-                    body: `⚠️ Gate 3 (Pre-Commit) предупреждение: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}`
-                });
-            }
-        }
-        // Pre-Merge валидация при git merge
-        if (input.tool === "bash" && input.args?.command?.includes("git merge")) {
-            const currentBranch = await $.command `git branch --show-current`.text();
-            // Проверяем что мерж в develop
-            if (input.args.command.includes("develop")) {
-                const gateResult = await quality_gates_1.qualityGates.preMerge($, directory);
-                if (!gateResult.passed) {
-                    await client.session.prompt({
-                        body: `❌ Gate 4 (Pre-Merge) не пройден: ${gateResult.checks.filter(c => !c.passed).map(c => c.name).join(", ")}\n\nМерж заблокирован.`
-                    });
-                    throw new Error(`❌ Мерж заблокирован: Gate 4 не пройден`);
-                }
-                // Запрашиваем подтверждение пользователя
-                await client.session.prompt({
-                    body: `⚠️ Вы собираетесь выполнить мерж ветки "${currentBranch}" в develop.\n\nКоммиты:\n${output?.result || 'Нет данных'}\n\nПодтвердите мерж (да/нет):`
-                });
-            }
         }
     };
     return {
