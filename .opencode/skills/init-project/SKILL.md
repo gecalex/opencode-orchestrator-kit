@@ -17,36 +17,88 @@ compatibility: opencode
 ### Шаг 1: Проверка расширения
 
 ```bash
-test -d ~/.opencode/extensions/ || echo "Расширение не установлено"
+test -f .opencode/dist/index.js && echo "Плагин установлен"
 ```
 
 ### Шаг 2: Создание структуры директорий
 
+Обязательные:
 ```bash
 mkdir -p .opencode/agents
 mkdir -p .opencode/skills
-mkdir -p .opencode/specify/specs
-mkdir -p .opencode/specify/memory
-mkdir -p scripts
-mkdir -p docs
+mkdir -p docs/
+mkdir -p scripts/
 ```
 
-### Шаг 3: Инициализация Git (если не инициализирован)
+### Шаг 3: Создание структуры спецификаций
+
+**Speckit формат (НОВЫЙ стандарт):**
+```bash
+mkdir -p .specify/memory/
+mkdir -p .specify/specs/
+```
+
+**utA формат (СТАРЫЙ):**
+```bash
+mkdir -p SPEC/memory/
+mkdir -p SPEC/specs/
+```
+
+**Корневой формат (альтернатива):**
+```bash
+mkdir -p specs/
+```
+
+### Шаг 4: Инициализация Git (если не инициализирован)
 
 ```bash
 git rev-parse --git-dir || git init && git checkout -b develop
 ```
 
-### Шаг 4: Создание .gitignore (если отсутствует)
+### Шаг 5: Создание .gitignore (если отсутствует)
 
 ```bash
-test -f .gitignore || echo "node_modules/\n__pycache__/\n*.pyc" > .gitignore
+test -f .gitignore || cat > .gitignore <<EOF
+node_modules/
+__pycache__/
+*.pyc
+dist/
+build/
+.env
+EOF
 ```
 
-### Шаг 5: Запуск Pre-Flight проверок
+### Шаг 6: Создание .opencode/state.json
+
+```bash
+echo '{"state":2,"lastUpdated":"'$(date -Iseconds)'"}' > .opencode/state.json
+```
+
+### Шаг 7: Запуск Pre-Flight проверок
 
 ```bash
 skill: pre-flight
+```
+
+## Структура директорий после инициализации
+
+```
+project/
+├── .git/
+├── .gitignore
+├── .opencode/
+│   ├── state.json
+│   ├── agents/
+│   └── skills/
+├── .specify/              # Speckit (приоритет)
+│   ├── memory/
+│   └── specs/
+├── SPEC/                  # utA (альтернатива)
+│   ├── memory/
+│   └── specs/
+├── specs/                 # Корень (альтернатива)
+├── docs/
+└── scripts/
 ```
 
 ## Результат
@@ -54,6 +106,7 @@ skill: pre-flight
 - Структура директорий создана
 - Git инициализирован (если нужно)
 - .gitignore создан (если нужно)
+- .opencode/state.json создан (state 2)
 - Pre-Flight проверки выполнены
 
 ## Использование

@@ -1,6 +1,6 @@
 ---
 name: analyze-state
-description: Анализ состояния проекта — определение кода состояния (1-10), проверка наличия кода, спецификаций, конституции.
+description: Анализ состояния проекта — определение кода состояния (1-10), проверка наличия спецификаций, конституции, плана, задач.
 compatibility: opencode
 ---
 
@@ -27,6 +27,14 @@ compatibility: opencode
 | **9** | integration | Фаза интеграции |
 | **10** | release | Релиз-готов |
 
+## Важно: Поддержка форматов
+
+Проверяй ВСЕ локации (приоритет сверху вниз):
+
+1. **Speckit формат**: `.specify/` (НОВЫЙ стандарт)
+2. **utA формат**: `SPEC/` (старый формат проекта uta)
+3. **Корневой формат**: `CONSTITUTION.md`, `specs/`, `PLAN.md`, `TASKS.md`
+
 ## Инструкции
 
 ### Шаг 1: Проверка наличия .git
@@ -37,25 +45,47 @@ test -d .git && echo "yes"
 
 ### Шаг 2: Проверка наличия конституции
 
+Проверяй в порядке приоритета:
+
 ```bash
-test -f CONSTITUTION.md && echo "yes"
+# 1. Speckit формат
+test -f .specify/memory/constitution.md && echo "specify"
+# 2. utA формат
+test -f SPEC/memory/constitution.md && echo "spec"
+# 3. Корень проекта
+test -f CONSTITUTION.md && echo "root"
 ```
 
 ### Шаг 3: Проверка наличия спецификаций
 
 ```bash
+# 1. Speckit
+find .specify/specs -type f -name "*.md" 2>/dev/null | head -1
+# 2. utA
+find SPEC/specs -type f -name "*.md" 2>/dev/null | head -1
+# 3. Корень
 find specs -type f -name "*.md" 2>/dev/null | head -1
 ```
 
 ### Шаг 4: Проверка наличия плана
 
 ```bash
+# 1. Speckit
+test -f .specify/plan.md && echo "yes"
+# 2. utA
+test -f SPEC/plan.md && echo "yes"
+# 3. Корень
 test -f PLAN.md && echo "yes"
 ```
 
 ### Шаг 5: Проверка наличия задач
 
 ```bash
+# 1. Speckit
+test -f .specify/specs/tasks.md && echo "yes"
+# 2. utA
+test -f SPEC/specs/tasks.md && echo "yes"
+# 3. Корень
 test -f TASKS.md && echo "yes"
 ```
 
@@ -63,11 +93,13 @@ test -f TASKS.md && echo "yes"
 
 ```
 Нет .git → 1 (пустой проект)
-Есть .git, нет CONSTITUTION.md → 2 (инициализирован)
-Есть .git, есть CONSTITUTION.md, нет specs/ → 3 (constitution)
-Есть .git, есть CONSTITUTION.md, есть specs/, нет PLAN.md → 4 (specifications)
-Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md, нет TASKS.md → 5 (plan)
-Есть .git, есть CONSTITUTION.md, есть specs/, есть PLAN.md, есть TASKS.md → 6 (tasks)
+
+Есть .git, нет конституции (ни в одной локации) → 2 (инициализирован)
+Есть .git, есть конституция, нет specs → 3 (constitution)
+
+Есть .git, есть конституция, есть specs/, нет plan → 4 (specifications)
+Есть .git, есть конституция, есть specs/, есть plan, нет tasks → 5 (plan)
+Есть .git, есть конституция, есть specs/, есть plan, есть tasks → 6 (tasks)
 ```
 
 ## Результат
@@ -75,10 +107,16 @@ test -f TASKS.md && echo "yes"
 Возвращает код состояния и описание:
 
 ```
-Состояние проекта: 6 (tasks)
+Состояние проект��: 6 (tasks)
 
-Разрешённые агенты: project-initializer, constitution-agent, specify-agent, plan-agent, task-agent
-Запрещённые агенты: python-developer
+Локации найдены:
+- Constitution: .specify/memory/constitution.md
+- Specs: .specify/specs/
+- Plan: .specify/plan.md
+- Tasks: .specify/specs/tasks.md
+
+Разрешённые агенты: speckit-constitution, speckit-specify, speckit-plan, speckit-tasks
+Запрещённые агенты: go-developer, python-developer
 ```
 
 ## Использование

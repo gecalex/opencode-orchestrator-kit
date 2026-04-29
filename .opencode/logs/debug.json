@@ -799,3 +799,69 @@
 {"ts":"2026-04-25T22:05:16.899Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
 {"ts":"2026-04-25T22:05:16.899Z","msg":"Запуск Pre-Flight..."}
 {"ts":"2026-04-25T22:05:16.899Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:07:16.424Z","msg":"test"}
+{"ts":"2026-04-25T22:07:16.471Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:07:16.472Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:07:16.472Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:07:16.472Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:07:16.472Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:07:16.472Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:07:16.473Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:07:16.474Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:07:16.486Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:07:16.487Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:07:16.487Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:07:16.487Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:07:16.487Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:07:16.487Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:07:16.488Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:09:56.829Z","msg":"test"}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:09:56.892Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:09:56.900Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:09:56.900Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:09:56.921Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:09:56.921Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:09:56.921Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:09:56.921Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:09:56.921Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:09:56.922Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:09:56.990Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:09:56.991Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:10:07.227Z","msg":"test"}
+{"ts":"2026-04-25T22:10:07.341Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:10:07.341Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:10:07.342Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:10:07.342Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:10:07.342Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:10:07.342Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:10:07.355Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:10:07.356Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:10:07.356Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:10:07.357Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:10:07.357Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:10:07.357Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:10:07.357Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:10:07.357Z","msg":"Pre-Flight result: success=false, passed=0"}
+{"ts":"2026-04-25T22:10:07.424Z","msg":"=== onSessionCreated START ==="}
+{"ts":"2026-04-25T22:10:07.424Z","msg":"Проверка наличия .git..."}
+{"ts":"2026-04-25T22:10:07.425Z","msg":"hasGit = \"no\""}
+{"ts":"2026-04-25T22:10:07.425Z","msg":"Проверка: hasGit=\"no\""}
+{"ts":"2026-04-25T22:10:07.425Z","msg":"Запуск project-initializer (state 1 -> 2)..."}
+{"ts":"2026-04-25T22:10:07.432Z","msg":"Запуск Pre-Flight..."}
+{"ts":"2026-04-25T22:10:07.456Z","msg":"Pre-Flight result: success=false, passed=0"}
