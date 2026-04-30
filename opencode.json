@@ -87,6 +87,22 @@
     "security-auditor": {
       "description": "Security audit агент",
       "mode": "subagent"
+    },
+    "bug-hunter": {
+      "description": "Охота на баги в существующем коде",
+      "mode": "subagent"
+    },
+    "test-assigner": {
+      "description": "Определение языка и назначение тестировщика",
+      "mode": "subagent"
+    },
+    "security-tester": {
+      "description": "Security тестирование",
+      "mode": "subagent"
+    },
+    "meta-agent": {
+      "description": "Meta-агент для создания агентов",
+      "mode": "subagent"
     }
   },
   "mcp": {
